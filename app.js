@@ -10,21 +10,21 @@ const devices = [
     },
     {
         id: 2,
-        name: 'Open Painting Area',
-        desc: 'Separation of ceramic materials.',
-        type: 'ph-paint-brush-broad',
+        name: 'Engine',
+        desc: 'Precision industrial combustion engine drivetrain.',
+        type: 'ph-engine',
         baseTemp: 22,
         baseHumidity: 45,
         baseAirflow: 800
     },
     {
         id: 3,
-        name: 'Crusher Walk-through',
-        desc: 'Heavy duty rock crushing equipment.',
-        type: 'ph-intersect',
-        baseTemp: 80,
-        baseHumidity: 20,
-        baseAirflow: 200
+        name: 'Battery',
+        desc: 'Advanced energy storage and power stabilization module.',
+        type: 'ph-battery-charging',
+        baseTemp: 35,
+        baseHumidity: 30,
+        baseAirflow: 100
     },
     {
         id: 4,
@@ -114,6 +114,14 @@ function selectDevice(id) {
     renderDeviceList();
     const dev = devices.find(d => d.id === id);
     if (mainTitle) mainTitle.innerText = dev.name;
+
+    // Trigger 3D Model Switch
+    if (window.loadMachineModel) {
+        let modelPath = 'model-optimized.glb';
+        if (id === 2) modelPath = 'engine.glb';
+        if (id === 3) modelPath = 'battery-optimized.glb';
+        window.loadMachineModel(modelPath);
+    }
 
     // Reset inputs based on device base values
     if (tempInput) {

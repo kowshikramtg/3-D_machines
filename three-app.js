@@ -1,4 +1,4 @@
-// three-app.js — GLB Model Integration with Draco Compression
+// three-app.js — GLB Model Integration with Dynamic Switching
 (function () {
     const container = document.getElementById('three-container');
     const loadingOverlay = document.getElementById('loading-overlay');
@@ -7,7 +7,7 @@
 
     // Scene setup
     const scene = new THREE.Scene();
-    scene.background = null; // transparent
+    scene.background = null; 
 
     // Camera
     const camera = new THREE.PerspectiveCamera(45, container.clientWidth / container.clientHeight, 0.1, 1000);
@@ -16,14 +16,14 @@
     // Renderer
     const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
     renderer.setSize(container.clientWidth, container.clientHeight);
-    renderer.setPixelRatio(Math.min(window.devicePixelRatio, 1.5)); // Performance optimization
+    renderer.setPixelRatio(Math.min(window.devicePixelRatio, 1.5));
     renderer.shadowMap.enabled = true;
-    renderer.outputEncoding = THREE.sRGBEncoding; // Correct texture colors
+    renderer.outputEncoding = THREE.sRGBEncoding;
     renderer.setClearColor(0x000000, 0);
     container.appendChild(renderer.domElement);
 
     // Lights
-    const ambientLight = new THREE.AmbientLight(0xffffff, 0.6);
+    const ambientLight = new THREE.AmbientLight(0xffffff, 0.8);
     scene.add(ambientLight);
 
     const dirLight = new THREE.DirectionalLight(0xffffff, 2);
@@ -35,76 +35,91 @@
     hemiLight.position.set(0, 20, 0);
     scene.add(hemiLight);
 
-    // Materials / Model Group
-    let model;
-
-    // --- Loaders Setup ---
+    // Loaders Setup
+    let currentModel;
     const loadingManager = new THREE.LoadingManager();
     loadingManager.onProgress = (url, loaded, total) => {
         const progress = Math.round((loaded / total) * 100);
-        if (loadingText) loadingText.innerText = `Loading Model... ${progress}%`;
+        if (loadingText) loadingText.innerText = `Calibrating System... ${progress}%`;
     };
     loadingManager.onLoad = () => {
-        if (loadingOverlay) loadingOverlay.style.opacity = '0';
-        setTimeout(() => { if (loadingOverlay) loadingOverlay.style.display = 'none'; }, 500);
+        if (loadingOverlay) {
+            loadingOverlay.style.opacity = '0';
+            setTimeout(() => { loadingOverlay.style.display = 'none'; }, 500);
+        }
     };
 
     const dracoLoader = new THREE.DRACOLoader();
-    // Using official Google CDN for decoders
     dracoLoader.setDecoderPath('https://www.gstatic.com/draco/versioned/decoders/1.5.6/');
 
     const gltfLoader = new THREE.GLTFLoader(loadingManager);
     gltfLoader.setDRACOLoader(dracoLoader);
 
-    // Initial load - model-optimized.glb should be ready soon
-    gltfLoader.load(
-        'model-optimized.glb',
-        (gltf) => {
-            model = gltf.scene;
-            scene.add(model);
-
-            // Center and Frame Model
-            const box = new THREE.Box3().setFromObject(model);
-            const center = box.getCenter(new THREE.Vector3());
-            const size = box.getSize(new THREE.Vector3());
-
-            model.position.x += (model.position.x - center.x);
-            model.position.y += (model.position.y - center.y);
-            model.position.z += (model.position.z - center.z);
-
-            // Compute camera distance
-            const maxDim = Math.max(size.x, size.y, size.z);
-            const fov = camera.fov * (Math.PI / 180);
-            let cameraZ = Math.abs(maxDim / 2 / Math.tan(fov / 2));
-            cameraZ *= 0.8; // extremely tight showcase
-            camera.position.set(cameraZ, cameraZ * 0.5, cameraZ);
-            camera.updateProjectionMatrix();
-
-            // Set controls target to center
-            controls.target.set(0, 0, 0);
-        },
-        undefined,
-        (error) => {
-            console.error('Error loading model:', error);
-            if (loadingText) loadingText.innerText = '3D System Offline. Using proxy.';
-            
-            // Show fallback image
-            const fallback = document.getElementById('fallback-machine-image');
-            if (fallback) fallback.style.display = 'block';
-            if (loadingOverlay) {
-                loadingOverlay.style.opacity = '0';
-                setTimeout(() => loadingOverlay.style.display = 'none', 500);
-            }
+    // Global function to switch models
+    window.loadMachineModel = (modelPath) => {
+        // Show loading
+        if (loadingOverlay) {
+            loadingOverlay.style.display = 'flex';
+            loadingOverlay.style.opacity = '1';
         }
-    );
+        if (loadingText) loadingText.innerText = 'Initializing...';
+
+        // Clear existing model
+        if (currentModel) {
+            scene.remove(currentModel);
+            // Optional: dispose geometries/materials for memory
+        }
+
+        gltfLoader.load(
+            modelPath,
+            (gltf) => {
+                currentModel = gltf.scene;
+                scene.add(currentModel);
+
+                // Center and Frame Model
+                const box = new THREE.Box3().setFromObject(currentModel);
+                const center = box.getCenter(new THREE.Vector3());
+                const size = box.getSize(new THREE.Vector3());
+
+                currentModel.position.x += (currentModel.position.x - center.x);
+                currentModel.position.y += (currentModel.position.y - center.y);
+                currentModel.position.z += (currentModel.position.z - center.z);
+
+                // Compute camera distance
+                const maxDim = Math.max(size.x, size.y, size.z);
+                const fov = camera.fov * (Math.PI / 180);
+                let cameraZ = Math.abs(maxDim / 2 / Math.tan(fov / 2));
+                
+                // Adjust framing based on model
+                let multiplier = 0.8;
+                if (modelPath.includes('engine')) multiplier = 1.0;
+                if (modelPath.includes('battery')) multiplier = 1.1; // Give the battery some room
+                cameraZ *= multiplier;
+
+                camera.position.set(cameraZ, cameraZ * 0.5, cameraZ);
+                camera.updateProjectionMatrix();
+                controls.target.set(0, 0, 0);
+            },
+            undefined,
+            (error) => {
+                console.error('Error loading model:', error);
+                if (loadingText) loadingText.innerText = 'System Offline. Using proxy.';
+                // Show fallback
+                const fallback = document.getElementById('fallback-machine-image');
+                if (fallback) fallback.style.display = 'block';
+                if (loadingOverlay) {
+                    loadingOverlay.style.opacity = '0';
+                    setTimeout(() => loadingOverlay.style.display = 'none', 500);
+                }
+            }
+        );
+    };
 
     // Controls
     const controls = new THREE.OrbitControls(camera, renderer.domElement);
     controls.enableDamping = true;
     controls.dampingFactor = 0.05;
-    controls.enableZoom = true;
     controls.autoRotate = true;
-    controls.autoRotateSpeed = 1.0;
 
     // Resizing
     window.addEventListener('resize', () => {
@@ -121,6 +136,7 @@
     }
     animate();
 
-    // UI Interaction is now handled in app.js for better synchronization
+    // Initial Load - default model
+    window.loadMachineModel('model-optimized.glb');
 
 })();
