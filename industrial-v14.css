@@ -79,6 +79,29 @@ body {
     border-radius: 8px;
 }
 
+.dropdown:hover .dropdown-content {
+    display: block !important;
+}
+
+.dropdown-content a:hover {
+    background-color: #f8fafc;
+}
+
+.nav-main-link:hover {
+    color: #f59e0b !important;
+}
+
+.feature-link {
+    font-weight: 500 !important;
+    text-align: center;
+    transition: all 0.1s;
+}
+
+.feature-link:hover {
+    font-weight: 800 !important;
+    color: #0f172a !important;
+}
+
 /* TOP BAR */
 .top-bar {
     height: var(--header-height);
