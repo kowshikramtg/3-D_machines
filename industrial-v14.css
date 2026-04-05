@@ -100,7 +100,7 @@ body {
 /* TOP BAR */
 .top-bar {
     height: var(--header-height);
-    background: transparent;
+    background: rgba(255, 255, 255, 0.4);
     backdrop-filter: blur(10px);
     border-bottom: 1px solid var(--border-color);
     display: flex;
@@ -190,7 +190,8 @@ main.center-area {
     left: 0;
     right: 0;
     height: var(--footer-height);
-    background: transparent;
+    background: rgba(255, 255, 255, 0.4);
+    backdrop-filter: blur(10px);
     border-top: 1px solid var(--border-color);
     display: flex;
     align-items: stretch;
@@ -203,33 +204,32 @@ main.center-area {
 .device-card {
     flex: 1;
     min-width: 250px;
-    height: 100%;
-    background: transparent;
-    border: none;
-    border-radius: 0;
-    margin: 0;
+    height: 80%;
+    background: rgba(0, 0, 0, 0.03);
+    border: 1px solid rgba(0, 0, 0, 0.05);
+    border-radius: 8px;
+    margin: 8px 12px;
     padding: 0 2rem;
     display: flex;
     align-items: center;
     gap: 1.5rem;
     cursor: pointer;
-    transition: all 0.3s;
+    transition: all 0.4s cubic-bezier(0.165, 0.84, 0.44, 1);
     position: relative;
 }
 
-/* Bifurcation Divider (|) */
-.device-card:not(:last-child)::after {
-    content: '';
-    position: absolute;
-    right: 0;
-    top: 25%;
-    height: 50%;
-    width: 1px;
-    background: var(--border-color);
+.device-card:hover {
+    background: rgba(0, 0, 0, 0.06);
+    transform: scale(1.04) translateY(-1px);
+    border: 1.5px solid #000000;
+    box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+    z-index: 10;
 }
 
 .device-card.active {
-    background: rgba(249, 115, 22, 0.04);
+    background: rgba(0, 0, 0, 0.08);
+    border: 1.5px solid #000000;
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
 }
 
 .device-card.active::before {
