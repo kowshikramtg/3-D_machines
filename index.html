@@ -1,28 +1,105 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Equipment Monitor | Industrial SaaS</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800;900&display=swap"
+        rel="stylesheet">
     <script src="https://unpkg.com/@phosphor-icons/web"></script>
     <script src="https://unpkg.com/three@0.145.0/build/three.min.js"></script>
     <script src="https://unpkg.com/three@0.145.0/examples/js/controls/OrbitControls.js"></script>
     <script src="https://unpkg.com/three@0.145.0/examples/js/loaders/GLTFLoader.js"></script>
     <script src="https://unpkg.com/three@0.145.0/examples/js/loaders/DRACOLoader.js"></script>
-    
+
     <!-- Chart.js for smooth, identical graphs -->
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-    
+
     <!-- HTML2PDF for downloading reports -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
 
     <link rel="stylesheet" href="industrial-v14.css?v=16">
+    <style>
+        /* Action Dropdown Menu */
+        .action-menu-container {
+            position: relative;
+            display: inline-block;
+        }
+
+        .action-menu-trigger {
+            background: rgba(15, 23, 42, 0.05);
+            border: 1px solid var(--border-color);
+            color: var(--text-primary);
+            padding: 0.6rem 0.8rem;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 1.2rem;
+            transition: all 0.2s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .action-menu-trigger:hover {
+            background: rgba(15, 23, 42, 0.1);
+        }
+
+        .action-menu-dropdown {
+            display: none;
+            position: absolute;
+            right: 0;
+            top: 100%;
+            background: white;
+            min-width: 140px;
+            box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1), 0 8px 10px -6px rgba(0, 0, 0, 0.1);
+            border: 1px solid #e2e8f0;
+            border-radius: 8px;
+            z-index: 100;
+            margin-top: 0.5rem;
+            overflow: hidden;
+            flex-direction: column;
+        }
+
+        .action-menu-container:hover .action-menu-dropdown {
+            display: flex;
+        }
+
+        .action-menu-item {
+            padding: 0.75rem 1rem;
+            font-size: 0.85rem;
+            font-weight: 700;
+            color: #475569;
+            text-decoration: none;
+            display: flex;
+            align-items: center;
+            gap: 0.6rem;
+            cursor: pointer;
+            transition: background 0.2s, color 0.2s;
+            border: none;
+            width: 100%;
+            text-align: left;
+            background: transparent;
+        }
+
+        .action-menu-item:hover {
+            background: #f8fafc;
+            color: #0f172a;
+        }
+
+        .action-menu-item i {
+            font-size: 1.1rem;
+        }
+
+        .action-menu-item.download { color: #16a34a; }
+        .action-menu-item.share { color: #0ea5e9; }
+    </style>
 </head>
+
 <body>
-    
+
     <!-- Left Side Panel (structural |) -->
     <aside class="side-track left-track">
         <div class="track-icons">
@@ -40,7 +117,7 @@
             <i class="ph ph-instagram-logo"></i>
         </div>
     </aside>
-    
+
     <!-- Top Navigation -->
     <header class="top-bar">
         <div class="top-left">
@@ -50,236 +127,326 @@
             <span>Intelligence</span>
             <span>Fleet</span>
         </div>
-        <div class="top-right" style="display: flex; gap: 2rem; align-items: center; font-weight: 700; font-size: 0.95rem; color: #475569;">
-            <a href="#" style="color: inherit; text-decoration: none; padding: 0.5rem; transition: color 0.2s;">About</a>
+        <div class="top-right"
+            style="display: flex; gap: 2rem; align-items: center; font-weight: 700; font-size: 0.95rem; color: #475569;">
+            <a href="#"
+                style="color: inherit; text-decoration: none; padding: 0.5rem; transition: color 0.2s;">About</a>
             <div class="dropdown" style="position: relative; display: inline-block; padding-bottom: 0.5rem;">
-                <a href="#" class="nav-main-link" style="color: inherit; text-decoration: none; padding: 0.5rem; display: flex; align-items: center; gap: 0.3rem;">Features <i class="ph-bold ph-caret-down"></i></a>
-                <div class="dropdown-content" style="display: none; position: absolute; background-color: white; min-width: 200px; box-shadow: 0px 8px 24px 0px rgba(0,0,0,0.1); border-radius: 8px; z-index: 50; top: 100%; overflow: hidden; border: 1px solid #e2e8f0; right: 0;">
-                    <a href="#" id="link-features-ops" class="feature-link" style="color: #475569; padding: 12px 16px; text-decoration: none; display: block; border-bottom: 1px solid #f1f5f9; font-size: 0.95rem;">Model Ops</a>
-                    <a href="#" id="link-features-command" class="feature-link" style="color: #475569; padding: 12px 16px; text-decoration: none; display: block; border-bottom: 1px solid #f1f5f9; font-size: 0.95rem;">Ticket Admin</a>
-                    <a href="#" id="link-features-kalman" class="feature-link" style="color: #475569; padding: 12px 16px; text-decoration: none; display: block; border-bottom: 1px solid #f1f5f9; font-size: 0.95rem;">Noise Filter</a>
-                    <a href="#" id="link-features-patterns" class="feature-link" style="color: #475569; padding: 12px 16px; text-decoration: none; display: block; font-size: 0.95rem;">Failure Patterns</a>
+                <a href="#" class="nav-main-link"
+                    style="color: inherit; text-decoration: none; padding: 0.5rem; display: flex; align-items: center; gap: 0.3rem;">Features
+                    <i class="ph-bold ph-caret-down"></i></a>
+                <div class="dropdown-content"
+                    style="display: none; position: absolute; background-color: white; min-width: 200px; box-shadow: 0px 8px 24px 0px rgba(0,0,0,0.1); border-radius: 8px; z-index: 50; top: 100%; overflow: hidden; border: 1px solid #e2e8f0; right: 0;">
+                    <a href="#" id="link-features-ops" class="feature-link"
+                        style="color: #475569; padding: 12px 16px; text-decoration: none; display: block; border-bottom: 1px solid #f1f5f9; font-size: 0.95rem;">Model
+                        Ops</a>
+                    <a href="#" id="link-features-command" class="feature-link"
+                        style="color: #475569; padding: 12px 16px; text-decoration: none; display: block; border-bottom: 1px solid #f1f5f9; font-size: 0.95rem;">Ticket
+                        Admin</a>
+                    <a href="#" id="link-features-kalman" class="feature-link"
+                        style="color: #475569; padding: 12px 16px; text-decoration: none; display: block; border-bottom: 1px solid #f1f5f9; font-size: 0.95rem;">Noise
+                        Filter</a>
+                    <a href="#" id="link-features-patterns" class="feature-link"
+                        style="color: #475569; padding: 12px 16px; text-decoration: none; display: block; font-size: 0.95rem;">Failure
+                        Patterns</a>
                 </div>
             </div>
             <div class="dropdown" style="position: relative; display: inline-block; padding-bottom: 0.5rem;">
-                <a href="#" style="color: inherit; text-decoration: none; padding: 0.5rem; display: flex; align-items: center; gap: 0.3rem;">Clustering Insights <i class="ph-bold ph-caret-down"></i></a>
-                <div class="dropdown-content" style="display: none; position: absolute; background-color: white; min-width: 180px; box-shadow: 0px 8px 16px 0px rgba(0,0,0,0.1); border-radius: 8px; z-index: 50; top: 100%; overflow: hidden; border: 1px solid #e2e8f0; right: 0;">
-                    <a href="#" style="color: #475569; padding: 12px 16px; text-decoration: none; display: block; font-weight: 600;">Motor (MOT-007)</a>
+                <a href="#"
+                    style="color: inherit; text-decoration: none; padding: 0.5rem; display: flex; align-items: center; gap: 0.3rem;">Clustering
+                    Insights <i class="ph-bold ph-caret-down"></i></a>
+                <div class="dropdown-content"
+                    style="display: none; position: absolute; background-color: white; min-width: 180px; box-shadow: 0px 8px 16px 0px rgba(0,0,0,0.1); border-radius: 8px; z-index: 50; top: 100%; overflow: hidden; border: 1px solid #e2e8f0; right: 0;">
+                    <a href="#" id="link-clustering-motor"
+                        style="color: #475569; padding: 12px 16px; text-decoration: none; display: block; font-weight: 600;">Motor
+                        (MOT-007)</a>
                 </div>
             </div>
             <div style="width: 1px; height: 24px; background: #cbd5e1; margin: 0 0.5rem;"></div>
-            <i class="ph-bold ph-user" style="font-size: 1.4rem; cursor: pointer; color: #475569; transition: color 0.2s;"></i>
-            <button id="btn-auth-toggle" style="background: #facc15; font-weight: 700; border: none; padding: 0.5rem 1.5rem; border-radius: 6px; cursor: pointer; color: #0f172a; transition: background 0.2s;">Login</button>
+            <i class="ph-bold ph-user"
+                style="font-size: 1.4rem; cursor: pointer; color: #475569; transition: color 0.2s;"></i>
+            <button id="btn-auth-toggle"
+                style="background: #facc15; font-weight: 700; border: none; padding: 0.5rem 1.5rem; border-radius: 6px; cursor: pointer; color: #0f172a; transition: background 0.2s;">Login</button>
         </div>
     </header>
 
     <!-- Main Content Area -->
     <main class="center-area">
         <div id="default-dashboard">
-        <!-- Hero Showcase -->
-        <section class="hero-section">
-            <div class="hero-text">
-                <h1 id="main-title">Shot blasting machine</h1>
-                <p>Advanced surface preparation technology for industrial-grade metal cleaning. Precision-engineered for high-durability coating applications.</p>
-                <div class="hero-stats" style="display: flex; gap: 2rem; margin-top: 2rem;">
-                    <div class="stat-item">
-                        <span style="display: block; font-size: 0.85rem; color: #64748b; font-weight: 600;">Status</span>
-                        <span style="font-weight: 700; color: #22c55e;">Operational</span>
-                    </div>
-                    <div class="stat-item">
-                        <span style="display: block; font-size: 0.85rem; color: #64748b; font-weight: 600;">Model</span>
-                        <span style="font-weight: 700;">SB-2000X</span>
+            <!-- Hero Showcase -->
+            <section class="hero-section">
+                <div class="hero-text">
+                    <h1 id="main-title">Shot blasting machine</h1>
+                    <p>Advanced surface preparation technology for industrial-grade metal cleaning. Precision-engineered
+                        for high-durability coating applications.</p>
+                    <div class="hero-stats" style="display: flex; gap: 2rem; margin-top: 2rem;">
+                        <div class="stat-item">
+                            <span
+                                style="display: block; font-size: 0.85rem; color: #64748b; font-weight: 600;">Status</span>
+                            <span style="font-weight: 700; color: #22c55e;">Operational</span>
+                        </div>
+                        <div class="stat-item">
+                            <span
+                                style="display: block; font-size: 0.85rem; color: #64748b; font-weight: 600;">Model</span>
+                            <span style="font-weight: 700;">SB-2000X</span>
+                        </div>
                     </div>
                 </div>
-            </div>
-            
-            <div class="hero-image" id="hero-image-container">
-                <div id="three-container">
-                    <div id="loading-overlay">
-                        <div class="loader"></div>
-                        <span id="loading-text" style="font-weight: 600; color: #0f172a;">Calibrating System... 0%</span>
-                    </div>
-                    <!-- Fallback image hidden by default -->
-                    <img id="fallback-machine-image" src="machine.png" alt="Machine Fallback" style="display: none; max-width: 90%; max-height: 90%; object-fit: contain;">
-                </div>
-            </div>
-        </section>
 
-        <!-- Details and Parameters -->
-        <div class="details-grid">
-            
-            <!-- Cards Column 1: Types -->
-            <div class="card-section">
-                <h3 class="section-title"><i class="ph-bold ph-cube"></i> Machine Configuration</h3>
-                <div class="types-section">
-                    <div class="cards-grid">
-                        <div class="equipment-card active">
-                            <div class="card-top">
-                                <h4>Painting & Drying</h4>
-                                <div class="workspace">Workspace: <strong>2-10 m²</strong></div>
-                            </div>
-                            <i class="ph ph-caret-right" style="color: #cbd5e1;"></i>
+                <div class="hero-image" id="hero-image-container">
+                    <div id="three-container">
+                        <div id="loading-overlay">
+                            <div class="loader"></div>
+                            <span id="loading-text" style="font-weight: 600; color: #0f172a;">Calibrating System...
+                                0%</span>
                         </div>
-                        <div class="equipment-card">
-                            <div class="card-top">
-                                <h4>Engine</h4>
-                                <div class="workspace">Workspace: <strong>5-15 m²</strong></div>
+                        <!-- Fallback image hidden by default -->
+                        <img id="fallback-machine-image" src="machine.png" alt="Machine Fallback"
+                            style="display: none; max-width: 90%; max-height: 90%; object-fit: contain;">
+                    </div>
+                </div>
+            </section>
+
+            <!-- Details and Parameters -->
+            <div class="details-grid">
+
+                <!-- Cards Column 1: Types -->
+                <div class="card-section">
+                    <h3 class="section-title"><i class="ph-bold ph-cube"></i> Machine Configuration</h3>
+                    <div class="types-section">
+                        <div class="cards-grid">
+                            <div class="equipment-card active">
+                                <div class="card-top">
+                                    <h4>Painting & Drying</h4>
+                                    <div class="workspace">Workspace: <strong>2-10 m²</strong></div>
+                                </div>
+                                <i class="ph ph-caret-right" style="color: #cbd5e1;"></i>
                             </div>
-                            <i class="ph ph-caret-right" style="color: #cbd5e1;"></i>
-                        </div>
-                        <div class="equipment-card">
-                            <div class="card-top">
-                                <h4>Battery</h4>
-                                <div class="workspace">Workspace: <strong>10-30 m²</strong></div>
+                            <div class="equipment-card">
+                                <div class="card-top">
+                                    <h4>Engine</h4>
+                                    <div class="workspace">Workspace: <strong>5-15 m²</strong></div>
+                                </div>
+                                <i class="ph ph-caret-right" style="color: #cbd5e1;"></i>
                             </div>
-                            <i class="ph ph-caret-right" style="color: #cbd5e1;"></i>
+                            <div class="equipment-card">
+                                <div class="card-top">
+                                    <h4>Battery</h4>
+                                    <div class="workspace">Workspace: <strong>10-30 m²</strong></div>
+                                </div>
+                                <i class="ph ph-caret-right" style="color: #cbd5e1;"></i>
+                            </div>
                         </div>
                     </div>
                 </div>
-            </div>
 
-            <!-- Cards Column 2: Parameters -->
-            <div class="card-section">
-                <h3 class="section-title"><i class="ph-bold ph-sliders"></i> Operating Parameters</h3>
-                <div class="params-section">
-                    <div class="control-panel">
-                        <div class="input-group">
-                            <label>Temperature (&deg;C)</label>
-                            <span class="val-display" id="temp-val">45</span>
-                            <input type="range" id="temp-input" min="0" max="150" value="45">
+                <!-- Cards Column 2: Parameters -->
+                <div class="card-section">
+                    <h3 class="section-title"><i class="ph-bold ph-sliders"></i> Operating Parameters</h3>
+                    <div class="params-section">
+                        <div class="control-panel">
+                            <div class="input-group">
+                                <label>Temperature (&deg;C)</label>
+                                <span class="val-display" id="temp-val">45</span>
+                                <input type="range" id="temp-input" min="0" max="150" value="45">
+                            </div>
+                            <div class="input-group">
+                                <label>Humidity (%)</label>
+                                <span class="val-display" id="humidity-val">30</span>
+                                <input type="range" id="humidity-input" min="0" max="100" value="30">
+                            </div>
+                            <div class="input-group">
+                                <label>Air Flow (cfm)</label>
+                                <span class="val-display" id="airflow-val">500</span>
+                                <input type="range" id="airflow-input" min="100" max="1000" value="500">
+                            </div>
                         </div>
-                        <div class="input-group">
-                            <label>Humidity (%)</label>
-                            <span class="val-display" id="humidity-val">30</span>
-                            <input type="range" id="humidity-input" min="0" max="100" value="30">
-                        </div>
-                        <div class="input-group">
-                            <label>Air Flow (cfm)</label>
-                            <span class="val-display" id="airflow-val">500</span>
-                            <input type="range" id="airflow-input" min="100" max="1000" value="500">
-                        </div>
-                    </div>
-                    
-                    <div class="ai-suggestion hidden" id="ai-suggestion-box">
-                        <div class="suggestion-header">
-                            <i class="ph-fill ph-warning-circle"></i>
-                        </div>
-                        <div class="suggestion-body">
-                            <h4 style="margin-bottom: 0.25rem;">Predictive Analytics Alert</h4>
-                            <p id="suggestion-text">Threshold exceeded. Maintenance advised.</p>
+
+                        <div class="ai-suggestion hidden" id="ai-suggestion-box">
+                            <div class="suggestion-header">
+                                <i class="ph-fill ph-warning-circle"></i>
+                            </div>
+                            <div class="suggestion-body">
+                                <h4 style="margin-bottom: 0.25rem;">Predictive Analytics Alert</h4>
+                                <p id="suggestion-text">Threshold exceeded. Maintenance advised.</p>
+                            </div>
                         </div>
                     </div>
                 </div>
-            </div>
 
-        </div>
+            </div>
         </div> <!-- End of default-dashboard -->
 
         <!-- Motor Dashboard Custom View -->
         <div id="motor-dashboard" style="display: none; padding-bottom: 4rem;">
-        
-            <div class="motor-header" style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 2rem;">
+
+            <div class="motor-header"
+                style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 2rem;">
                 <h1 style="font-size: 2.5rem; font-weight: 900; color: var(--text-primary);">Motor MOT-007</h1>
                 <div style="display: flex; gap: 1rem; align-items: center;">
-                    <button id="btn-model-drift" class="btn-outline" style="padding: 0.6rem 1.2rem; border-radius: 6px; border: 1px solid var(--border-color); background: transparent; font-weight: 600; color: var(--text-primary); cursor: pointer; transition: background 0.2s;">Check for Model Drift</button>
+                    <button id="btn-model-drift" class="btn-outline"
+                        style="padding: 0.6rem 1.2rem; border-radius: 6px; border: 1px solid var(--border-color); background: transparent; font-weight: 600; color: var(--text-primary); cursor: pointer; transition: background 0.2s;">Check
+                        for Model Drift</button>
                     <!-- Auth-Aware Elements -->
                     <div id="auth-locked-container" style="display: flex; align-items: center;">
-                        <span style="color: var(--text-secondary); font-size: 0.9rem; font-weight: 600; display: flex; align-items: center; gap: 0.3rem;"><i class="ph-fill ph-lock-key" style="color: #f59e0b;"></i> Login to Download</span>
+                        <span
+                            style="color: var(--text-secondary); font-size: 0.9rem; font-weight: 600; display: flex; align-items: center; gap: 0.3rem;"><i
+                                class="ph-fill ph-lock-key" style="color: #f59e0b;"></i> Login to Download</span>
                     </div>
-                    <div id="auth-unlocked-container" style="display: none; align-items: center; gap: 0.5rem;">
-                        <button id="btn-download" style="padding: 0.6rem 1.2rem; border-radius: 6px; border: none; background: #16a34a; font-weight: 700; color: white; cursor: pointer; display: flex; align-items: center; gap: 0.4rem; transition: background 0.2s;"><i class="ph-bold ph-download-simple"></i> Download</button>
-                        <button id="btn-share" style="padding: 0.6rem 1.2rem; border-radius: 6px; border: none; background: #0ea5e9; font-weight: 700; color: white; cursor: pointer; display: flex; align-items: center; gap: 0.4rem; transition: background 0.2s;"><i class="ph-bold ph-share-network"></i> Share</button>
+                    <div id="auth-unlocked-container" style="display: none; align-items: center;">
+                        <div class="action-menu-container">
+                            <button class="action-menu-trigger">
+                                <i class="ph-bold ph-list"></i>
+                            </button>
+                            <div class="action-menu-dropdown">
+                                <button id="btn-download" class="action-menu-item download">
+                                    <i class="ph-bold ph-download-simple"></i> Download
+                                </button>
+                                <button id="btn-share" class="action-menu-item share">
+                                    <i class="ph-bold ph-share-network"></i> Share
+                                </button>
+                            </div>
+                        </div>
                     </div>
                 </div>
             </div>
-            
+
             <div class="motor-grid" style="display: grid; grid-template-columns: 1fr 1fr; gap: 2rem;">
-                
+
                 <!-- Left Column -->
                 <div class="motor-col left-col">
-                    
-                    <!-- Live Sensor Input -->
+
+                    <!-- Operational Parameters -->
                     <div class="card-section" style="margin-bottom: 1.5rem;">
-                        <h3 class="section-title" style="text-align: center; margin-bottom: 1.5rem; font-size: 1.1rem; color: var(--text-primary);">Live Sensor Input</h3>
-                        
-                        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1.5rem; margin-bottom: 1.5rem;">
-                            <div class="input-field">
-                                <label style="display: block; text-align: center; font-size: 0.85rem; color: var(--text-secondary); font-weight: 600; margin-bottom: 0.5rem;">Air Temperature K</label>
-                                <input type="number" id="motor-air-temp" placeholder="Enter value..." style="width: 100%; border: 1px solid var(--border-color); border-radius: 6px; padding: 0.5rem; text-align: center; font-family: 'Outfit', sans-serif;">
+                        <h3 class="section-title" style="text-align: center; margin-bottom: 1.5rem; font-size: 1.1rem; color: var(--text-primary);">Operational Parameters</h3>
+
+                        <div style="display: flex; flex-direction: column; gap: 1rem; margin-bottom: 1.5rem;">
+                            <div class="input-field" style="display: flex; align-items: center; justify-content: space-between; gap: 1rem;">
+                                <label style="flex: 0 0 160px; font-size: 0.75rem; font-weight: 800; color: #020617; text-transform: uppercase; letter-spacing: 0.05em;">Air Temperature (K)</label>
+                                <input type="number" id="motor-air-temp" placeholder="e.g. 300"
+                                    style="flex: 1; border: 1.5px solid var(--border-color); border-radius: 7px; padding: 0.55rem 0.85rem; font-family: 'Outfit', sans-serif; font-size: 0.95rem; outline: none; transition: border-color 0.2s;"
+                                    onfocus="this.style.borderColor='#fbbf24'" onblur="this.style.borderColor=''">
                             </div>
-                            <div class="input-field">
-                                <label style="display: block; text-align: center; font-size: 0.85rem; color: var(--text-secondary); font-weight: 600; margin-bottom: 0.5rem;">Process Temperature K</label>
-                                <input type="number" id="motor-proc-temp" placeholder="Enter value..." style="width: 100%; border: 1px solid var(--border-color); border-radius: 6px; padding: 0.5rem; text-align: center; font-family: 'Outfit', sans-serif;">
+                            <div class="input-field" style="display: flex; align-items: center; justify-content: space-between; gap: 1rem;">
+                                <label style="flex: 0 0 160px; font-size: 0.75rem; font-weight: 800; color: #020617; text-transform: uppercase; letter-spacing: 0.05em;">Process Temperature (K)</label>
+                                <input type="number" id="motor-proc-temp" placeholder="e.g. 310"
+                                    style="flex: 1; border: 1.5px solid var(--border-color); border-radius: 7px; padding: 0.55rem 0.85rem; font-family: 'Outfit', sans-serif; font-size: 0.95rem; outline: none; transition: border-color 0.2s;"
+                                    onfocus="this.style.borderColor='#fbbf24'" onblur="this.style.borderColor=''">
                             </div>
-                            <div class="input-field">
-                                <label style="display: block; text-align: center; font-size: 0.85rem; color: var(--text-secondary); font-weight: 600; margin-bottom: 0.5rem;">Rotational Speed Rpm</label>
-                                <input type="number" id="motor-rot-speed" placeholder="Enter value..." style="width: 100%; border: 1px solid var(--border-color); border-radius: 6px; padding: 0.5rem; text-align: center; font-family: 'Outfit', sans-serif;">
+                            <div class="input-field" style="display: flex; align-items: center; justify-content: space-between; gap: 1rem;">
+                                <label style="flex: 0 0 160px; font-size: 0.75rem; font-weight: 800; color: #020617; text-transform: uppercase; letter-spacing: 0.05em;">Rotational Speed (RPM)</label>
+                                <input type="number" id="motor-rot-speed" placeholder="e.g. 1500"
+                                    style="flex: 1; border: 1.5px solid var(--border-color); border-radius: 7px; padding: 0.55rem 0.85rem; font-family: 'Outfit', sans-serif; font-size: 0.95rem; outline: none; transition: border-color 0.2s;"
+                                    onfocus="this.style.borderColor='#fbbf24'" onblur="this.style.borderColor=''">
                             </div>
-                            <div class="input-field">
-                                <label style="display: block; text-align: center; font-size: 0.85rem; color: var(--text-secondary); font-weight: 600; margin-bottom: 0.5rem;">Torque Nm</label>
-                                <input type="number" id="motor-torque" placeholder="Enter value..." style="width: 100%; border: 1px solid var(--border-color); border-radius: 6px; padding: 0.5rem; text-align: center; font-family: 'Outfit', sans-serif;">
+                            <div class="input-field" style="display: flex; align-items: center; justify-content: space-between; gap: 1rem;">
+                                <label style="flex: 0 0 160px; font-size: 0.75rem; font-weight: 800; color: #020617; text-transform: uppercase; letter-spacing: 0.05em;">Torque (Nm)</label>
+                                <input type="number" id="motor-torque" placeholder="e.g. 45"
+                                    style="flex: 1; border: 1.5px solid var(--border-color); border-radius: 7px; padding: 0.55rem 0.85rem; font-family: 'Outfit', sans-serif; font-size: 0.95rem; outline: none; transition: border-color 0.2s;"
+                                    onfocus="this.style.borderColor='#fbbf24'" onblur="this.style.borderColor=''">
                             </div>
-                            <div class="input-field" style="grid-column: span 2;">
-                                <label style="display: block; text-align: center; font-size: 0.85rem; color: var(--text-secondary); font-weight: 600; margin-bottom: 0.5rem;">Tool Wear Min</label>
-                                <input type="number" id="motor-tool-wear" placeholder="Enter value..." style="width: 50%; margin: 0 auto; display: block; border: 1px solid var(--border-color); border-radius: 6px; padding: 0.5rem; text-align: center; font-family: 'Outfit', sans-serif;">
+                            <div class="input-field" style="display: flex; align-items: center; justify-content: space-between; gap: 1rem;">
+                                <label style="flex: 0 0 160px; font-size: 0.75rem; font-weight: 800; color: #020617; text-transform: uppercase; letter-spacing: 0.05em;">Tool Wear (min)</label>
+                                <input type="number" id="motor-tool-wear" placeholder="e.g. 120"
+                                    style="flex: 1; border: 1.5px solid var(--border-color); border-radius: 7px; padding: 0.55rem 0.85rem; font-family: 'Outfit', sans-serif; font-size: 0.95rem; outline: none; transition: border-color 0.2s;"
+                                    onfocus="this.style.borderColor='#fbbf24'" onblur="this.style.borderColor=''">
                             </div>
                         </div>
-                        
-                        <button id="motor-predict-btn" style="width: 100%; background: #fbbf24; color: #000; font-weight: 800; border: none; padding: 1rem; border-radius: 6px; cursor: pointer; text-transform: uppercase;">Predict Health</button>
+
+                        <button id="motor-predict-btn" style="width: 100%; background: #fbbf24; color: #000; font-weight: 800; border: none; padding: 1rem; border-radius: 6px; cursor: pointer; text-transform: uppercase; letter-spacing: 0.05em; font-size: 1rem;">Predict Health</button>
                     </div>
 
                     <div id="motor-results-left" style="display: none; opacity: 0; transition: opacity 0.5s ease;">
                         <!-- Prediction Result -->
-                        <div class="motor-card result-card" style="background: #fef2f2; border: 1px solid #fecaca; border-radius: 12px; padding: 1.5rem; margin-bottom: 1.5rem; text-align: center;">
-                            <h3 style="margin-bottom: 0.5rem; font-size: 1.1rem; color: var(--text-primary); font-weight: 700;">Prediction Result</h3>
-                            <div style="font-size: 1rem; color: var(--text-primary); margin-bottom: 0.5rem;">Status: <span id="motor-status-text" style="font-weight: 800; color: var(--text-primary);">--</span></div>
-                            <div style="font-size: 1rem; color: var(--text-secondary); margin-bottom: 1rem;">Health Score: <span id="motor-health-score" style="font-weight: 800; color: var(--text-primary);">-- / 100</span></div>
-                            <div style="font-size: 0.85rem; color: #ef4444; font-style: italic; border-top: 1px dashed #fecaca; padding-top: 1rem;">Login required to create tickets.</div>
+                        <div class="motor-card result-card"
+                            style="background: #fef2f2; border: 1px solid #fecaca; border-radius: 12px; padding: 1.5rem; margin-bottom: 1.5rem; text-align: center;">
+                            <h3
+                                style="margin-bottom: 0.5rem; font-size: 1.1rem; color: var(--text-primary); font-weight: 700;">
+                                Prediction Result</h3>
+                            <div style="font-size: 1rem; color: var(--text-primary); margin-bottom: 0.5rem;">Status:
+                                <span id="motor-status-text"
+                                    style="font-weight: 800; color: var(--text-primary);">--</span></div>
+                            <div style="font-size: 1rem; color: var(--text-secondary); margin-bottom: 1rem;">Health
+                                Score: <span id="motor-health-score"
+                                    style="font-weight: 800; color: var(--text-primary);">-- / 100</span></div>
+                            <div
+                                style="font-size: 0.85rem; color: #ef4444; font-style: italic; border-top: 1px dashed #fecaca; padding-top: 1rem;">
+                                Login required to create tickets.</div>
                         </div>
 
                         <!-- Business Impact Analysis -->
-                        <h3 class="section-title" style="text-align: center; margin-bottom: 1rem; font-size: 1.1rem; color: var(--text-primary);">Business Impact Analysis</h3>
+                        <h3 class="section-title"
+                            style="text-align: center; margin-bottom: 1rem; font-size: 1.1rem; color: var(--text-primary);">
+                            Business Impact Analysis</h3>
                         <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin-bottom: 2rem;">
                             <div style="background: #fef2f2; border-radius: 8px; padding: 1rem; text-align: center;">
-                                <div style="font-size: 0.85rem; color: #ef4444; font-weight: 600; margin-bottom: 0.5rem;">Estimated Cost of Failure</div>
-                                <div id="motor-cost-failure" style="font-size: 1.5rem; font-weight: 900; color: #7f1d1d;">₹--</div>
+                                <div
+                                    style="font-size: 0.85rem; color: #ef4444; font-weight: 600; margin-bottom: 0.5rem;">
+                                    Estimated Cost of Failure</div>
+                                <div id="motor-cost-failure"
+                                    style="font-size: 1.5rem; font-weight: 900; color: #7f1d1d;">₹--</div>
                             </div>
                             <div style="background: #f0fdf4; border-radius: 8px; padding: 1rem; text-align: center;">
-                                <div style="font-size: 0.85rem; color: #22c55e; font-weight: 600; margin-bottom: 0.5rem;">Predicted Savings</div>
-                                <div id="motor-predicted-savings" style="font-size: 1.5rem; font-weight: 900; color: #14532d;">₹--</div>
+                                <div
+                                    style="font-size: 0.85rem; color: #22c55e; font-weight: 600; margin-bottom: 0.5rem;">
+                                    Predicted Savings</div>
+                                <div id="motor-predicted-savings"
+                                    style="font-size: 1.5rem; font-weight: 900; color: #14532d;">₹--</div>
                             </div>
                         </div>
 
                         <!-- Actionable Recommendation Guide -->
-                        <h3 class="section-title" style="margin-bottom: 1rem; font-size: 1.1rem; color: var(--text-primary);">Actionable Recommendation Guide</h3>
+                        <h3 class="section-title"
+                            style="margin-bottom: 1rem; font-size: 1.1rem; color: var(--text-primary);">Actionable
+                            Recommendation Guide</h3>
                         <div id="motor-action-recommendations" style="display: none;">
                             <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
-                                <div style="background: white; border: 1px solid var(--border-color); border-radius: 8px; padding: 1rem; display: flex; gap: 1rem; align-items: flex-start;">
-                                    <div style="color: #ef4444; font-size: 1.2rem;"><i class="ph-bold ph-warning"></i></div>
+                                <div
+                                    style="background: white; border: 1px solid var(--border-color); border-radius: 8px; padding: 1rem; display: flex; gap: 1rem; align-items: flex-start;">
+                                    <div style="color: #ef4444; font-size: 1.2rem;"><i class="ph-bold ph-warning"></i>
+                                    </div>
                                     <div>
-                                        <h4 style="font-size: 0.9rem; font-weight: 700; margin-bottom: 0.3rem;">Safety First</h4>
-                                        <p style="font-size: 0.75rem; color: var(--text-secondary); line-height: 1.4;">Isolate the machine from power before performing any physical inspection.</p>
+                                        <h4 style="font-size: 0.9rem; font-weight: 700; margin-bottom: 0.3rem;">Safety
+                                            First</h4>
+                                        <p style="font-size: 0.75rem; color: var(--text-secondary); line-height: 1.4;">
+                                            Isolate the machine from power before performing any physical inspection.
+                                        </p>
                                     </div>
                                 </div>
-                                <div style="background: white; border: 1px solid var(--border-color); border-radius: 8px; padding: 1rem; display: flex; gap: 1rem; align-items: flex-start;">
-                                    <div style="color: #0ea5e9; font-size: 1.2rem;"><i class="ph-bold ph-chart-bar"></i></div>
+                                <div
+                                    style="background: white; border: 1px solid var(--border-color); border-radius: 8px; padding: 1rem; display: flex; gap: 1rem; align-items: flex-start;">
+                                    <div style="color: #0ea5e9; font-size: 1.2rem;"><i class="ph-bold ph-chart-bar"></i>
+                                    </div>
                                     <div>
-                                        <h4 style="font-size: 0.9rem; font-weight: 700; margin-bottom: 0.3rem;">Review XAI Insights</h4>
-                                        <p style="font-size: 0.75rem; color: var(--text-secondary); line-height: 1.4;">Check the "Why is it at risk?" chart to identify the root cause (e.g., high torque, tool wear).</p>
+                                        <h4 style="font-size: 0.9rem; font-weight: 700; margin-bottom: 0.3rem;">Review
+                                            XAI Insights</h4>
+                                        <p style="font-size: 0.75rem; color: var(--text-secondary); line-height: 1.4;">
+                                            Check the "Why is it at risk?" chart to identify the root cause (e.g., high
+                                            torque, tool wear).</p>
                                     </div>
                                 </div>
-                                <div style="background: white; border: 1px solid var(--border-color); border-radius: 8px; padding: 1rem; display: flex; gap: 1rem; align-items: flex-start;">
-                                    <div style="color: #3b82f6; font-size: 1.2rem;"><i class="ph-bold ph-magnifying-glass"></i></div>
+                                <div
+                                    style="background: white; border: 1px solid var(--border-color); border-radius: 8px; padding: 1rem; display: flex; gap: 1rem; align-items: flex-start;">
+                                    <div style="color: #3b82f6; font-size: 1.2rem;"><i
+                                            class="ph-bold ph-magnifying-glass"></i></div>
                                     <div>
-                                        <h4 style="font-size: 0.9rem; font-weight: 700; margin-bottom: 0.3rem;">Perform Sensory Check</h4>
-                                        <p style="font-size: 0.75rem; color: var(--text-secondary); line-height: 1.4;">Listen for unusual noises, check for overheating, and perform a vibration analysis.</p>
+                                        <h4 style="font-size: 0.9rem; font-weight: 700; margin-bottom: 0.3rem;">Perform
+                                            Sensory Check</h4>
+                                        <p style="font-size: 0.75rem; color: var(--text-secondary); line-height: 1.4;">
+                                            Listen for unusual noises, check for overheating, and perform a vibration
+                                            analysis.</p>
                                     </div>
                                 </div>
-                                <div style="background: white; border: 1px solid var(--border-color); border-radius: 8px; padding: 1rem; display: flex; gap: 1rem; align-items: flex-start;">
-                                    <div style="color: #8b5cf6; font-size: 1.2rem;"><i class="ph-bold ph-calendar"></i></div>
+                                <div
+                                    style="background: white; border: 1px solid var(--border-color); border-radius: 8px; padding: 1rem; display: flex; gap: 1rem; align-items: flex-start;">
+                                    <div style="color: #8b5cf6; font-size: 1.2rem;"><i class="ph-bold ph-calendar"></i>
+                                    </div>
                                     <div>
-                                        <h4 style="font-size: 0.9rem; font-weight: 700; margin-bottom: 0.3rem;">Schedule Maintenance</h4>
-                                        <p style="font-size: 0.75rem; color: var(--text-secondary); line-height: 1.4;">Based on the XAI insights, schedule the appropriate action (e.g., replace tool, adjust load).</p>
+                                        <h4 style="font-size: 0.9rem; font-weight: 700; margin-bottom: 0.3rem;">Schedule
+                                            Maintenance</h4>
+                                        <p style="font-size: 0.75rem; color: var(--text-secondary); line-height: 1.4;">
+                                            Based on the XAI insights, schedule the appropriate action (e.g., replace
+                                            tool, adjust load).</p>
                                     </div>
                                 </div>
                             </div>
@@ -289,16 +456,21 @@
                 </div>
 
                 <!-- Right Column -->
-                <div class="motor-col right-col" id="motor-results-right" style="display: flex; flex-direction: column; gap: 1.5rem;">
-                    
+                <div class="motor-col right-col" id="motor-results-right"
+                    style="display: flex; flex-direction: column; gap: 1.5rem;">
+
                     <!-- Live Operational Data -->
                     <div class="card-section" style="padding: 1.5rem; flex-grow: 1;">
-                        <h3 class="section-title" style="text-align: center; margin-bottom: 1.5rem; font-size: 1.1rem; color: var(--text-primary);">Live Operational Data</h3>
-                        
+                        <h3 class="section-title"
+                            style="text-align: center; margin-bottom: 1.5rem; font-size: 1.1rem; color: var(--text-primary);">
+                            Live Operational Data</h3>
+
                         <!-- Bar chart mockup using flex -->
-                        <div style="display: flex; align-items: flex-end; justify-content: space-around; height: 180px; padding: 0 1rem; position: relative;">
+                        <div
+                            style="display: flex; align-items: flex-end; justify-content: space-around; height: 180px; padding: 0 1rem; position: relative;">
                             <!-- Y-axis scale marks (mock) -->
-                            <div style="position: absolute; left: 0; top: 0; bottom: 20px; width: 100%; display: flex; flex-direction: column; justify-content: space-between; border-left: 1px solid var(--border-color); padding-left: 5px;">
+                            <div
+                                style="position: absolute; left: 0; top: 0; bottom: 20px; width: 100%; display: flex; flex-direction: column; justify-content: space-between; border-left: 1px solid var(--border-color); padding-left: 5px;">
                                 <span style="font-size: 0.7rem; color: #94a3b8;">10000000-</span>
                                 <span style="font-size: 0.7rem; color: #94a3b8;">8000000-</span>
                                 <span style="font-size: 0.7rem; color: #94a3b8;">6000000-</span>
@@ -306,30 +478,49 @@
                                 <span style="font-size: 0.7rem; color: #94a3b8;">2000000-</span>
                                 <span style="font-size: 0.7rem; color: #94a3b8;">0-</span>
                             </div>
-                            
-                            <!-- Bars -->
-                            <div style="display: flex; flex-direction: column; align-items: center; justify-content: flex-end; height: 100%; z-index: 1;">
-                                <div id="bar-rotational-speed" style="width: 80px; height: 4px; background: #0ea5e9; transition: height 0.5s ease;"></div>
-                                <div style="font-size: 0.75rem; color: var(--text-secondary); margin-top: 10px; text-transform: uppercase;">Rotational Speed</div>
+
+                            <div
+                                style="display: flex; flex-direction: column; align-items: center; justify-content: flex-end; height: 100%; z-index: 1;">
+                                <div id="bar-rotational-speed"
+                                    style="width: 80px; height: 4px; background: #fbbf24; transition: height 0.5s ease;">
+                                </div>
+                                <div
+                                    style="font-size: 0.75rem; color: var(--text-secondary); margin-top: 10px; text-transform: uppercase;">
+                                    Rotational Speed</div>
                             </div>
-                            
-                            <div style="display: flex; flex-direction: column; align-items: center; justify-content: flex-end; height: 100%; z-index: 1;">
-                                <div id="bar-torque" style="width: 120px; height: 100%; background: #0ea5e9; transition: height 0.5s ease;"></div>
-                                <div style="font-size: 0.75rem; color: var(--text-secondary); margin-top: 10px; text-transform: uppercase;">Torque</div>
+
+                            <div
+                                style="display: flex; flex-direction: column; align-items: center; justify-content: flex-end; height: 100%; z-index: 1;">
+                                <div id="bar-torque"
+                                    style="width: 120px; height: 100%; background: #fbbf24; transition: height 0.5s ease;">
+                                </div>
+                                <div
+                                    style="font-size: 0.75rem; color: var(--text-secondary); margin-top: 10px; text-transform: uppercase;">
+                                    Torque</div>
                             </div>
-                            
-                            <div style="display: flex; flex-direction: column; align-items: center; justify-content: flex-end; height: 100%; z-index: 1;">
-                                <div id="bar-tool-wear" style="width: 80px; height: 2px; background: #0ea5e9; transition: height 0.5s ease;"></div>
-                                <div style="font-size: 0.75rem; color: var(--text-secondary); margin-top: 10px; text-transform: uppercase;">Tool Wear</div>
+
+                            <div
+                                style="display: flex; flex-direction: column; align-items: center; justify-content: flex-end; height: 100%; z-index: 1;">
+                                <div id="bar-tool-wear"
+                                    style="width: 80px; height: 2px; background: #fbbf24; transition: height 0.5s ease;">
+                                </div>
+                                <div
+                                    style="font-size: 0.75rem; color: var(--text-secondary); margin-top: 10px; text-transform: uppercase;">
+                                    Tool Wear</div>
                             </div>
-                            <div style="position: absolute; bottom: 25px; left: 0; width: 100%; border-top: 1px solid var(--border-color);"></div>
+                            <div
+                                style="position: absolute; bottom: 25px; left: 0; width: 100%; border-top: 1px solid var(--border-color);">
+                            </div>
                         </div>
                     </div>
 
                     <!-- LSTM Anomaly Score -->
                     <div class="card-section" style="padding: 1.5rem; text-align: center;">
-                        <h3 class="section-title" style="margin-bottom: 0.5rem; font-size: 1.1rem; color: var(--text-primary);">LSTM Anomaly Score</h3>
-                        <p style="font-size: 0.85rem; color: var(--text-secondary);">Run prediction for anomaly score.</p>
+                        <h3 class="section-title"
+                            style="margin-bottom: 0.5rem; font-size: 1.1rem; color: var(--text-primary);">LSTM Anomaly
+                            Score</h3>
+                        <p style="font-size: 0.85rem; color: var(--text-secondary);">Run prediction for anomaly score.
+                        </p>
                     </div>
 
                 </div>
@@ -344,39 +535,58 @@
             <div style="max-width: 1000px; margin: 0 auto; padding: 2rem;">
                 <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 2rem;">
                     <div style="flex: 1;"></div>
-                    <h2 style="font-size: 1.8rem; font-weight: 800; color: #0f172a; text-align: center; flex: 2;">Model Operations Center</h2>
+                    <h2 style="font-size: 1.8rem; font-weight: 800; color: #0f172a; text-align: center; flex: 2;">Model
+                        Operations Center</h2>
                     <div style="flex: 1; text-align: right;">
-                        <a href="#" class="back-link" style="color: #3b82f6; font-weight: 600; text-decoration: none; font-size: 0.9rem;">&laquo; Back to Fleet Overview</a>
+                        <a href="#" class="back-link"
+                            style="color: #3b82f6; font-weight: 600; text-decoration: none; font-size: 0.9rem;">&laquo;
+                            Back to Fleet Overview</a>
                     </div>
                 </div>
-                
+
                 <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 2rem;">
                     <!-- Drift Graph Card -->
-                    <div style="background: white; border: 1px solid #e2e8f0; border-radius: 8px; box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05); padding: 1.5rem;">
-                        <h3 style="text-align: center; font-size: 1.1rem; color: #0f172a; margin-bottom: 0.5rem;">Model Health & Drift Analysis</h3>
-                        <p style="text-align: center; font-size: 0.85rem; color: #64748b; margin-bottom: 1.5rem;">Comparing live 'Torque (Nm)' data against the original training data.</p>
-                        
-                        <div style="background: #fef2f2; border: 1px solid #fecaca; border-radius: 6px; padding: 1rem; text-align: center; margin-bottom: 1rem;">
-                            <h4 style="color: #ef4444; font-weight: 800; margin-bottom: 0.25rem;">ALERT: Data Drift Detected!</h4>
-                            <p style="color: #7f1d1d; font-size: 0.85rem; margin: 0;">Model accuracy may be degraded. Retraining is recommended.</p>
+                    <div
+                        style="background: white; border: 1px solid #e2e8f0; border-radius: 8px; box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05); padding: 1.5rem;">
+                        <h3 style="text-align: center; font-size: 1.1rem; color: #0f172a; margin-bottom: 0.5rem;">Model
+                            Health & Drift Analysis</h3>
+                        <p style="text-align: center; font-size: 0.85rem; color: #64748b; margin-bottom: 1.5rem;">
+                            Comparing live 'Torque (Nm)' data against the original training data.</p>
+
+                        <div
+                            style="background: #fef2f2; border: 1px solid #fecaca; border-radius: 6px; padding: 1rem; text-align: center; margin-bottom: 1rem;">
+                            <h4 style="color: #ef4444; font-weight: 800; margin-bottom: 0.25rem;">ALERT: Data Drift
+                                Detected!</h4>
+                            <p style="color: #7f1d1d; font-size: 0.85rem; margin: 0;">Model accuracy may be degraded.
+                                Retraining is recommended.</p>
                         </div>
                         <div style="position: relative; width: 100%; height: 250px;">
                             <canvas id="opsDriftChart"></canvas>
                         </div>
                         <div style="text-align: center; font-size: 0.8rem; margin-top: 1rem;">
-                            <span style="color: #ef4444; font-weight: 600; margin-right: 1.5rem;">⟷ Live Data (Drifted)</span>
+                            <span style="color: #ef4444; font-weight: 600; margin-right: 1.5rem;">⟷ Live Data
+                                (Drifted)</span>
                             <span style="color: #3b82f6; font-weight: 600;">⟷ Training Data</span>
                         </div>
                     </div>
                     <!-- Retraining Logic Box -->
-                    <div style="background: white; border: 1px solid #e2e8f0; border-radius: 8px; box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05); padding: 1.5rem;">
-                        <h3 style="text-align: center; font-size: 1.1rem; color: #0f172a; margin-bottom: 1rem;">Model Retraining</h3>
-                        <p style="text-align: center; font-size: 0.9rem; color: #475569; margin-bottom: 2rem; line-height: 1.5;">Since data drift has been detected, the model's accuracy may be affected. Initiate a retraining pipeline to update the model with the latest data.</p>
-                        <button style="width: 100%; background: #3b82f6; color: white; border: none; padding: 1rem; border-radius: 6px; font-weight: 700; font-size: 1rem; cursor: pointer;">Initiate Retraining for Motor Model</button>
+                    <div
+                        style="background: white; border: 1px solid #e2e8f0; border-radius: 8px; box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05); padding: 1.5rem;">
+                        <h3 style="text-align: center; font-size: 1.1rem; color: #0f172a; margin-bottom: 1rem;">Model
+                            Retraining</h3>
+                        <p
+                            style="text-align: center; font-size: 0.9rem; color: #475569; margin-bottom: 2rem; line-height: 1.5;">
+                            Since data drift has been detected, the model's accuracy may be affected. Initiate a
+                            retraining pipeline to update the model with the latest data.</p>
+                        <button
+                            style="width: 100%; background: #3b82f6; color: white; border: none; padding: 1rem; border-radius: 6px; font-weight: 700; font-size: 1rem; cursor: pointer;">Initiate
+                            Retraining for Motor Model</button>
                     </div>
                 </div>
                 <div style="text-align: center; margin-top: 4rem;">
-                    <button style="background: #facc15; color: #0f172a; border: none; padding: 0.8rem 2.5rem; border-radius: 20px; font-weight: 800; font-size: 0.95rem; text-transform: uppercase;">Explore Assets</button>
+                    <button
+                        style="background: #facc15; color: #0f172a; border: none; padding: 0.8rem 2.5rem; border-radius: 20px; font-weight: 800; font-size: 0.95rem; text-transform: uppercase;">Explore
+                        Assets</button>
                 </div>
             </div>
         </div>
@@ -385,37 +595,68 @@
         <div id="view-command-center" style="display: none; padding-bottom: 4rem;">
             <div style="max-width: 1200px; margin: 0 auto; padding: 2rem;">
                 <div style="text-align: center; margin-bottom: 2rem; position: relative;">
-                    <h2 style="font-size: 2.2rem; font-weight: 900; color: #0f172a; font-style: italic; text-transform: uppercase;">Command Center</h2>
-                    <p style="color: #3b82f6; font-weight: 700; text-decoration: underline;">Active Maintenance Tickets</p>
-                    <a href="#" class="back-link" style="color: #4f46e5; font-weight: 700; text-decoration: none; font-size: 0.9rem; position: absolute; right: 0; bottom: 0;">&laquo; BACK TO FLEET</a>
+                    <h2
+                        style="font-size: 2.2rem; font-weight: 900; color: #0f172a; font-style: italic; text-transform: uppercase;">
+                        Command Center</h2>
+                    <p style="color: #3b82f6; font-weight: 700; text-decoration: underline;">Active Maintenance Tickets
+                    </p>
+                    <a href="#" class="back-link"
+                        style="color: #4f46e5; font-weight: 700; text-decoration: none; font-size: 0.9rem; position: absolute; right: 0; bottom: 0;">&laquo;
+                        BACK TO FLEET</a>
                 </div>
                 <!-- Banner -->
-                <div style="background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 8px; padding: 1.5rem; display: flex; gap: 2rem; margin-bottom: 2rem; align-items: stretch;">
+                <div
+                    style="background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 8px; padding: 1.5rem; display: flex; gap: 2rem; margin-bottom: 2rem; align-items: stretch;">
                     <div style="flex: 1; border-right: 1px solid #cbd5e1; padding-right: 2rem;">
-                        <h4 style="font-size: 0.8rem; text-transform: uppercase; color: #1e1b4b; font-weight: 800; text-decoration: underline; text-align: center; margin-bottom: 0.5rem;">How To Read "Incident Details"</h4>
-                        <p style="font-size: 0.8rem; color: #475569; text-align: center; margin: 0; line-height: 1.5;">The <strong>Details</strong> column captures the specific AI reason for the alert. It includes the machine's state and the specific health score at the exact moment the ticket was raised by you.</p>
+                        <h4
+                            style="font-size: 0.8rem; text-transform: uppercase; color: #1e1b4b; font-weight: 800; text-decoration: underline; text-align: center; margin-bottom: 0.5rem;">
+                            How To Read "Incident Details"</h4>
+                        <p style="font-size: 0.8rem; color: #475569; text-align: center; margin: 0; line-height: 1.5;">
+                            The <strong>Details</strong> column captures the specific AI reason for the alert. It
+                            includes the machine's state and the specific health score at the exact moment the ticket
+                            was raised by you.</p>
                     </div>
                     <div style="flex: 1; padding-left: 1rem;">
-                        <h4 style="font-size: 0.8rem; text-transform: uppercase; color: #1e1b4b; font-weight: 800; text-decoration: underline; text-align: center; margin-bottom: 0.5rem;">User Protocol</h4>
-                        <p style="font-size: 0.8rem; color: #475569; text-align: center; margin: 0; line-height: 1.5;">Use the <em style="font-weight:700;">SHARE</em> button to dispatch these specific diagnostic notes to on-site technicians. This log is private to your account: <br><strong style="color: #4f46e5;">sgrahul447@gmail.com</strong>.</p>
+                        <h4
+                            style="font-size: 0.8rem; text-transform: uppercase; color: #1e1b4b; font-weight: 800; text-decoration: underline; text-align: center; margin-bottom: 0.5rem;">
+                            User Protocol</h4>
+                        <p style="font-size: 0.8rem; color: #475569; text-align: center; margin: 0; line-height: 1.5;">
+                            Use the <em style="font-weight:700;">SHARE</em> button to dispatch these specific diagnostic
+                            notes to on-site technicians. This log is private to your account: <br><strong
+                                style="color: #4f46e5;">sgrahul447@gmail.com</strong>.</p>
                     </div>
                 </div>
                 <!-- Table -->
-                <div style="background: white; border-radius: 8px; box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1); overflow: hidden;">
+                <div
+                    style="background: white; border-radius: 8px; box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1); overflow: hidden;">
                     <table style="width: 100%; border-collapse: collapse;">
                         <thead>
                             <tr style="background: #0f172a; color: white;">
-                                <th style="padding: 1.2rem; text-align: left; font-size: 0.85rem; font-weight: 800; text-transform: uppercase;">Ticket ID</th>
-                                <th style="padding: 1.2rem; text-align: left; font-size: 0.85rem; font-weight: 800; text-transform: uppercase;">Asset ID</th>
-                                <th style="padding: 1.2rem; text-align: left; font-size: 0.85rem; font-weight: 800; text-transform: uppercase;">Incident Details</th>
-                                <th style="padding: 1.2rem; text-align: left; font-size: 0.85rem; font-weight: 800; text-transform: uppercase;">Priority</th>
-                                <th style="padding: 1.2rem; text-align: left; font-size: 0.85rem; font-weight: 800; text-transform: uppercase;">Logged On</th>
-                                <th style="padding: 1.2rem; text-align: left; font-size: 0.85rem; font-weight: 800; text-transform: uppercase;">Actions</th>
+                                <th
+                                    style="padding: 1.2rem; text-align: left; font-size: 0.85rem; font-weight: 800; text-transform: uppercase;">
+                                    Ticket ID</th>
+                                <th
+                                    style="padding: 1.2rem; text-align: left; font-size: 0.85rem; font-weight: 800; text-transform: uppercase;">
+                                    Asset ID</th>
+                                <th
+                                    style="padding: 1.2rem; text-align: left; font-size: 0.85rem; font-weight: 800; text-transform: uppercase;">
+                                    Incident Details</th>
+                                <th
+                                    style="padding: 1.2rem; text-align: left; font-size: 0.85rem; font-weight: 800; text-transform: uppercase;">
+                                    Priority</th>
+                                <th
+                                    style="padding: 1.2rem; text-align: left; font-size: 0.85rem; font-weight: 800; text-transform: uppercase;">
+                                    Logged On</th>
+                                <th
+                                    style="padding: 1.2rem; text-align: left; font-size: 0.85rem; font-weight: 800; text-transform: uppercase;">
+                                    Actions</th>
                             </tr>
                         </thead>
                         <tbody>
                             <tr>
-                                <td colspan="6" style="padding: 5rem 2rem; text-align: center; color: #cbd5e1; font-weight: 900; font-size: 1.2rem; font-style: italic; text-transform: uppercase;">NO ACTIVE THREATS FOUND</td>
+                                <td colspan="6"
+                                    style="padding: 5rem 2rem; text-align: center; color: #cbd5e1; font-weight: 900; font-size: 1.2rem; font-style: italic; text-transform: uppercase;">
+                                    NO ACTIVE THREATS FOUND</td>
                             </tr>
                         </tbody>
                     </table>
@@ -428,28 +669,40 @@
             <div style="max-width: 1000px; margin: 0 auto; padding: 2rem;">
                 <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 2rem;">
                     <div style="flex: 1;"></div>
-                    <h2 style="font-size: 1.8rem; font-weight: 800; color: #0f172a; text-align: center; flex: 2;">Advanced Preprocessing: Kalman Filter</h2>
+                    <h2 style="font-size: 1.8rem; font-weight: 800; color: #0f172a; text-align: center; flex: 2;">
+                        Advanced Preprocessing: Kalman Filter</h2>
                     <div style="flex: 1; text-align: right;">
-                        <a href="#" class="back-link" style="color: #3b82f6; font-weight: 600; text-decoration: none; font-size: 0.9rem;">&laquo; Back to Fleet Overview</a>
+                        <a href="#" class="back-link"
+                            style="color: #3b82f6; font-weight: 600; text-decoration: none; font-size: 0.9rem;">&laquo;
+                            Back to Fleet Overview</a>
                     </div>
                 </div>
-                
-                <div style="background: white; border: 1px solid #e2e8f0; border-radius: 8px; box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05); padding: 2rem;">
-                    <p style="text-align: center; font-size: 0.95rem; color: #64748b; margin-bottom: 2rem; line-height: 1.6;">A Moving Average is effective but lags behind the true signal. A Kalman Filter uses a predictive model to track the true signal more closely and responsively, allowing for faster and more accurate anomaly detection.</p>
-                    
+
+                <div
+                    style="background: white; border: 1px solid #e2e8f0; border-radius: 8px; box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05); padding: 2rem;">
+                    <p
+                        style="text-align: center; font-size: 0.95rem; color: #64748b; margin-bottom: 2rem; line-height: 1.6;">
+                        A Moving Average is effective but lags behind the true signal. A Kalman Filter uses a predictive
+                        model to track the true signal more closely and responsively, allowing for faster and more
+                        accurate anomaly detection.</p>
+
                     <div style="position: relative; width: 100%; height: 350px;">
                         <canvas id="kalmanChart"></canvas>
                     </div>
-                    
+
                     <div style="text-align: center; font-size: 0.8rem; margin-top: 1rem;">
-                        <span style="color: #22c55e; font-weight: 600; margin-right: 1.5rem;">⟷ Kalman Filter (More Accurate)</span>
-                        <span style="color: #f97316; font-weight: 600; margin-right: 1.5rem;">⟷ Moving Average (Lagging)</span>
+                        <span style="color: #22c55e; font-weight: 600; margin-right: 1.5rem;">⟷ Kalman Filter (More
+                            Accurate)</span>
+                        <span style="color: #f97316; font-weight: 600; margin-right: 1.5rem;">⟷ Moving Average
+                            (Lagging)</span>
                         <span style="color: #fecaca; font-weight: 600;">⟷ Raw Noisy Signal</span>
                     </div>
                 </div>
-                
+
                 <div style="text-align: center; margin-top: 4rem;">
-                    <button style="background: #facc15; color: #0f172a; border: none; padding: 0.8rem 2.5rem; border-radius: 20px; font-weight: 800; font-size: 0.95rem; text-transform: uppercase;">Explore Assets</button>
+                    <button
+                        style="background: #facc15; color: #0f172a; border: none; padding: 0.8rem 2.5rem; border-radius: 20px; font-weight: 800; font-size: 0.95rem; text-transform: uppercase;">Explore
+                        Assets</button>
                 </div>
             </div>
         </div>
@@ -458,30 +711,179 @@
         <div id="view-pattern-miner" style="display: none; padding-bottom: 4rem;">
             <div style="max-width: 1000px; margin: 0 auto; padding: 2rem;">
                 <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 2rem;">
-                    <h2 style="font-size: 2.2rem; font-weight: 900; color: #0f172a; text-align: left;">Maintenance Pattern Miner</h2>
-                    <a href="#" class="back-link" style="color: #3b82f6; font-weight: 600; text-decoration: none; font-size: 0.9rem;">&laquo; Back to Fleet</a>
+                    <h2 style="font-size: 2.2rem; font-weight: 900; color: #0f172a; text-align: left;">Maintenance
+                        Pattern Miner</h2>
+                    <a href="#" class="back-link"
+                        style="color: #3b82f6; font-weight: 600; text-decoration: none; font-size: 0.9rem;">&laquo; Back
+                        to Fleet</a>
                 </div>
-                <p style="text-align: left; font-size: 1rem; color: #64748b; margin-bottom: 3rem; text-align: center;">Discovering hidden relationships between sensor readings and failure events from historical data.</p>
-                
+                <p style="text-align: left; font-size: 1rem; color: #64748b; margin-bottom: 3rem; text-align: center;">
+                    Discovering hidden relationships between sensor readings and failure events from historical data.
+                </p>
+
                 <div style="display: flex; flex-direction: column; gap: 1.5rem;">
                     <!-- Rule 1 -->
-                    <div style="background: white; border: 1px solid #e2e8f0; border-radius: 8px; box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05); padding: 2rem; text-align: center;">
-                        <h3 style="font-size: 1.1rem; color: #0f172a; font-weight: 800; margin-bottom: 1.5rem;">Discovered Rule #1</h3>
-                        <div style="font-size: 0.95rem; font-weight: 700; color: #334155; margin-bottom: 1rem;">IF <span style="background: #f1f5f9; padding: 0.2rem 0.5rem; border-radius: 4px; font-family: monospace; color: #64748b;">Torque &gt; 60Nm</span> AND <span style="background: #f1f5f9; padding: 0.2rem 0.5rem; border-radius: 4px; font-family: monospace; color: #64748b;">Speed &gt; 2800RPM</span></div>
-                        <div style="font-size: 1rem; font-weight: 700; color: #0f172a; margin-bottom: 1rem;">THEN probability of <span style="background: #fef2f2; color: #ef4444; padding: 0.2rem 0.5rem; border-radius: 4px;">Bearing Failure</span> increases by approximately <span style="color: #ef4444;">82%</span>.</div>
-                        <div style="font-size: 0.8rem; color: #94a3b8; font-style: italic;">(This pattern is <strong>2.4x</strong> more likely than random chance.)</div>
+                    <div
+                        style="background: white; border: 1px solid #e2e8f0; border-radius: 8px; box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05); padding: 2rem; text-align: center;">
+                        <h3 style="font-size: 1.1rem; color: #0f172a; font-weight: 800; margin-bottom: 1.5rem;">
+                            Discovered Rule #1</h3>
+                        <div style="font-size: 0.95rem; font-weight: 700; color: #334155; margin-bottom: 1rem;">IF <span
+                                style="background: #f1f5f9; padding: 0.2rem 0.5rem; border-radius: 4px; font-family: monospace; color: #64748b;">Torque
+                                &gt; 60Nm</span> AND <span
+                                style="background: #f1f5f9; padding: 0.2rem 0.5rem; border-radius: 4px; font-family: monospace; color: #64748b;">Speed
+                                &gt; 2800RPM</span></div>
+                        <div style="font-size: 1rem; font-weight: 700; color: #0f172a; margin-bottom: 1rem;">THEN
+                            probability of <span
+                                style="background: #fef2f2; color: #ef4444; padding: 0.2rem 0.5rem; border-radius: 4px;">Bearing
+                                Failure</span> increases by approximately <span style="color: #ef4444;">82%</span>.
+                        </div>
+                        <div style="font-size: 0.8rem; color: #94a3b8; font-style: italic;">(This pattern is
+                            <strong>2.4x</strong> more likely than random chance.)</div>
                     </div>
                     <!-- Rule 2 -->
-                    <div style="background: white; border: 1px solid #e2e8f0; border-radius: 8px; box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05); padding: 2rem; text-align: center;">
-                        <h3 style="font-size: 1.1rem; color: #0f172a; font-weight: 800; margin-bottom: 1.5rem;">Discovered Rule #2</h3>
-                        <div style="font-size: 0.95rem; font-weight: 700; color: #334155; margin-bottom: 1rem;">IF <span style="background: #f1f5f9; padding: 0.2rem 0.5rem; border-radius: 4px; font-family: monospace; color: #64748b;">Temp &gt; 305K</span></div>
-                        <div style="font-size: 1rem; font-weight: 700; color: #0f172a; margin-bottom: 1rem;">THEN probability of <span style="background: #fef2f2; color: #ef4444; padding: 0.2rem 0.5rem; border-radius: 4px;">Overheat Anomaly</span> increases by approximately <span style="color: #ef4444;">65%</span>.</div>
-                        <div style="font-size: 0.8rem; color: #94a3b8; font-style: italic;">(This pattern is <strong>1.8x</strong> more likely than random chance.)</div>
+                    <div
+                        style="background: white; border: 1px solid #e2e8f0; border-radius: 8px; box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05); padding: 2rem; text-align: center;">
+                        <h3 style="font-size: 1.1rem; color: #0f172a; font-weight: 800; margin-bottom: 1.5rem;">
+                            Discovered Rule #2</h3>
+                        <div style="font-size: 0.95rem; font-weight: 700; color: #334155; margin-bottom: 1rem;">IF <span
+                                style="background: #f1f5f9; padding: 0.2rem 0.5rem; border-radius: 4px; font-family: monospace; color: #64748b;">Temp
+                                &gt; 305K</span></div>
+                        <div style="font-size: 1rem; font-weight: 700; color: #0f172a; margin-bottom: 1rem;">THEN
+                            probability of <span
+                                style="background: #fef2f2; color: #ef4444; padding: 0.2rem 0.5rem; border-radius: 4px;">Overheat
+                                Anomaly</span> increases by approximately <span style="color: #ef4444;">65%</span>.
+                        </div>
+                        <div style="font-size: 0.8rem; color: #94a3b8; font-style: italic;">(This pattern is
+                            <strong>1.8x</strong> more likely than random chance.)</div>
                     </div>
                 </div>
-                
+
                 <div style="text-align: center; margin-top: 4rem;">
-                    <button style="background: #facc15; color: #0f172a; border: none; padding: 0.8rem 2.5rem; border-radius: 20px; font-weight: 800; font-size: 0.95rem; text-transform: uppercase;">Explore Assets</button>
+                    <button
+                        style="background: #facc15; color: #0f172a; border: none; padding: 0.8rem 2.5rem; border-radius: 20px; font-weight: 800; font-size: 0.95rem; text-transform: uppercase;">Explore
+                        Assets</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- 5. Fleet Clustering Insights (Motors) -->
+        <div id="view-clustering-motors" style="display: none; padding-bottom: 4rem;">
+            <div style="max-width: 1100px; margin: 0 auto; padding: 2rem;">
+                <!-- Header -->
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 2rem;">
+                    <div style="flex: 1;"></div>
+                    <h2 style="font-size: 1.8rem; font-weight: 800; color: #0f172a; text-align: center; flex: 2;">Fleet
+                        Clustering Insights (Motors)</h2>
+                    <div style="flex: 1; text-align: right;">
+                        <a href="#" class="back-link"
+                            style="color: #3b82f6; font-weight: 600; text-decoration: none; font-size: 0.9rem;">&laquo;
+                            Back to Fleet Overview</a>
+                    </div>
+                </div>
+
+                <!-- Main Two-Column Content -->
+                <div style="display: grid; grid-template-columns: 1.3fr 1fr; gap: 2rem; align-items: start;">
+                    <!-- Left: Scatter Plot Card -->
+                    <div
+                        style="background: white; border: 1px solid #e2e8f0; border-radius: 12px; padding: 1.8rem; box-shadow: 0 2px 8px rgba(0,0,0,0.06);">
+                        <h3
+                            style="text-align: center; font-size: 1.1rem; font-weight: 700; color: #0f172a; margin-bottom: 0.4rem;">
+                            Motor Operational Clusters</h3>
+                        <p style="text-align: center; font-size: 0.82rem; color: #64748b; margin-bottom: 1.5rem;">Motors
+                            are grouped by their average operational stress. Each color represents a distinct behavioral
+                            pattern.</p>
+
+                        <!-- Empty State Placeholder -->
+                        <div id="cluster-empty-state"
+                            style="display: flex; flex-direction: column; align-items: center; justify-content: center; height: 240px; border: 2px dashed #e2e8f0; border-radius: 10px;">
+                            <i class="ph ph-chart-scatter"
+                                style="font-size: 3rem; margin-bottom: 0.7rem; color: #cbd5e1;"></i>
+                            <p
+                                style="font-weight: 600; font-size: 0.9rem; color: #94a3b8; text-align: center; padding: 0 1rem;">
+                                Go to <strong>Motor MOT-007</strong>, enter sensor inputs &amp; click <strong>Predict
+                                    Health</strong> first.</p>
+                        </div>
+
+                        <!-- Chart canvas (shown after prediction) -->
+                        <div id="cluster-chart-wrapper"
+                            style="display: none; position: relative; width: 100%; height: 260px;">
+                            <canvas id="clusterScatterChart"></canvas>
+                        </div>
+
+                        <!-- Legend -->
+                        <div style="display: flex; justify-content: center; gap: 1.5rem; margin-top: 1.2rem;">
+                            <span
+                                style="display: flex; align-items: center; gap: 0.4rem; font-size: 0.82rem; font-weight: 600; color: #475569;">
+                                <span
+                                    style="width: 12px; height: 12px; border-radius: 50%; background: #22c55e; display: inline-block;"></span>
+                                Cluster 0
+                            </span>
+                            <span
+                                style="display: flex; align-items: center; gap: 0.4rem; font-size: 0.82rem; font-weight: 600; color: #475569;">
+                                <span
+                                    style="width: 12px; height: 12px; border-radius: 50%; background: #f59e0b; display: inline-block;"></span>
+                                Cluster 1
+                            </span>
+                            <span
+                                style="display: flex; align-items: center; gap: 0.4rem; font-size: 0.82rem; font-weight: 600; color: #475569;">
+                                <span
+                                    style="width: 12px; height: 12px; border-radius: 50%; background: #ef4444; display: inline-block;"></span>
+                                Cluster 2
+                            </span>
+                        </div>
+                    </div>
+
+                    <!-- Right: Cluster Interpretation Card -->
+                    <div
+                        style="background: #f0f6ff; border: 1px solid #bfdbfe; border-radius: 12px; padding: 1.8rem; box-shadow: 0 2px 8px rgba(0,0,0,0.05);">
+                        <h3 style="font-size: 1.05rem; font-weight: 700; color: #0f172a; margin-bottom: 1.4rem;">Cluster
+                            Interpretation</h3>
+
+                        <!-- Cluster 0 -->
+                        <div style="margin-bottom: 1.2rem;">
+                            <div style="display: flex; align-items: center; gap: 0.5rem; margin-bottom: 0.4rem;">
+                                <span
+                                    style="width: 10px; height: 10px; border-radius: 50%; background: #22c55e; display: inline-block; flex-shrink: 0;"></span>
+                                <strong style="font-size: 0.92rem; color: #22c55e;">Cluster 0: Standard
+                                    Operation</strong>
+                            </div>
+                            <p style="font-size: 0.8rem; color: #475569; line-height: 1.6; padding-left: 1.4rem;">These
+                                motors are operating within normal torque and speed parameters. Represents a healthy
+                                baseline.</p>
+                        </div>
+
+                        <!-- Cluster 1 -->
+                        <div style="margin-bottom: 1.2rem;">
+                            <div style="display: flex; align-items: center; gap: 0.5rem; margin-bottom: 0.4rem;">
+                                <span
+                                    style="width: 10px; height: 10px; border-radius: 50%; background: #f59e0b; display: inline-block; flex-shrink: 0;"></span>
+                                <strong style="font-size: 0.92rem; color: #d97706;">Cluster 1: High Stress</strong>
+                            </div>
+                            <p style="font-size: 0.8rem; color: #475569; line-height: 1.6; padding-left: 1.4rem;">This
+                                group consistently runs at high torque and/or speed. They are at higher risk of
+                                premature wear. Recommend load balancing.</p>
+                        </div>
+
+                        <!-- Cluster 2 -->
+                        <div>
+                            <div style="display: flex; align-items: center; gap: 0.5rem; margin-bottom: 0.4rem;">
+                                <span
+                                    style="width: 10px; height: 10px; border-radius: 50%; background: #ef4444; display: inline-block; flex-shrink: 0;"></span>
+                                <strong style="font-size: 0.92rem; color: #ef4444;">Cluster 2: High Wear / Failure
+                                    Prone</strong>
+                            </div>
+                            <p style="font-size: 0.8rem; color: #475569; line-height: 1.6; padding-left: 1.4rem;">These
+                                motors show significant tool wear relative to their operational stress. This is a strong
+                                indicator of imminent failure.</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Explore Assets Button -->
+                <div style="text-align: center; margin-top: 3.5rem;">
+                    <button
+                        style="background: #facc15; color: #0f172a; border: none; padding: 0.8rem 2.5rem; border-radius: 20px; font-weight: 800; font-size: 0.95rem; text-transform: uppercase; letter-spacing: 0.06em; cursor: pointer;">EXPLORE
+                        ASSETS</button>
                 </div>
             </div>
         </div>
@@ -494,12 +896,17 @@
     </footer>
 
     <!-- Drift Modal -->
-    <div id="drift-modal" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.6); z-index: 9999; align-items: center; justify-content: center;">
-        <div style="background: white; border-radius: 12px; width: 650px; max-width: 90%; padding: 2rem; position: relative;">
-            <h2 style="text-align: center; margin-bottom: 0.5rem; color: #0f172a; font-size: 1.4rem; font-weight: 700;">Model Health & Drift Analysis</h2>
-            <p style="text-align: center; color: #64748b; font-size: 0.85rem; margin-bottom: 1.5rem;">Comparing live 'Torque (Nm)' data distribution against the original training data.</p>
-            
-            <div id="drift-status-banner" style="background: #f0fdf4; border: 1px solid #bbf7d0; color: #16a34a; border-radius: 6px; padding: 0.75rem; text-align: center; font-weight: 600; margin-bottom: 1.5rem;">
+    <div id="drift-modal"
+        style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.6); z-index: 9999; align-items: center; justify-content: center;">
+        <div
+            style="background: white; border-radius: 12px; width: 650px; max-width: 90%; padding: 2rem; position: relative;">
+            <h2 style="text-align: center; margin-bottom: 0.5rem; color: #0f172a; font-size: 1.4rem; font-weight: 700;">
+                Model Health & Drift Analysis</h2>
+            <p style="text-align: center; color: #64748b; font-size: 0.85rem; margin-bottom: 1.5rem;">Comparing live
+                'Torque (Nm)' data distribution against the original training data.</p>
+
+            <div id="drift-status-banner"
+                style="background: #f0fdf4; border: 1px solid #bbf7d0; color: #16a34a; border-radius: 6px; padding: 0.75rem; text-align: center; font-weight: 600; margin-bottom: 1.5rem;">
                 ✓ Model is Stable
             </div>
 
@@ -513,7 +920,8 @@
             </div>
 
             <div style="text-align: right;">
-                <button id="btn-close-drift" style="background: #e2e8f0; color: #475569; border: none; padding: 0.5rem 1.5rem; border-radius: 6px; font-weight: 600; cursor: pointer;">Close</button>
+                <button id="btn-close-drift"
+                    style="background: #e2e8f0; color: #475569; border: none; padding: 0.5rem 1.5rem; border-radius: 6px; font-weight: 600; cursor: pointer;">Close</button>
             </div>
         </div>
     </div>
@@ -521,4 +929,5 @@
     <script src="app.js?v=18"></script>
     <script src="three-app.js?v=16"></script>
 </body>
+
 </html>

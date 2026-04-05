@@ -316,7 +316,8 @@ function init() {
         document.getElementById('view-model-ops'),
         document.getElementById('view-command-center'),
         document.getElementById('view-kalman-filter'),
-        document.getElementById('view-pattern-miner')
+        document.getElementById('view-pattern-miner'),
+        document.getElementById('view-clustering-motors')
     ];
 
     function showView(viewId) {
@@ -353,6 +354,31 @@ function init() {
 
     const lnkPatterns = document.getElementById('link-features-patterns');
     if(lnkPatterns) lnkPatterns.addEventListener('click', (e) => { e.preventDefault(); showView('view-pattern-miner'); });
+
+    // Clustering Insights: Motor link
+    const lnkClusteringMotor = document.getElementById('link-clustering-motor');
+    if(lnkClusteringMotor) lnkClusteringMotor.addEventListener('click', (e) => {
+        e.preventDefault();
+        showView('view-clustering-motors');
+        const emptyState = document.getElementById('cluster-empty-state');
+        const chartWrapper = document.getElementById('cluster-chart-wrapper');
+        if (motorPredicted) {
+            // Read values from the motor dashboard inputs
+            const rotSpeed = parseFloat(document.getElementById('motor-rot-speed').value) || 1500;
+            const torque   = parseFloat(document.getElementById('motor-torque').value)    || 45;
+            const toolWear = parseFloat(document.getElementById('motor-tool-wear').value) || 120;
+            const airTemp  = parseFloat(document.getElementById('motor-air-temp').value)  || 300;
+            const procTemp = parseFloat(document.getElementById('motor-proc-temp').value) || 310;
+            if(emptyState) emptyState.style.display = 'none';
+            if(chartWrapper) chartWrapper.style.display = 'block';
+            renderClusterChart({ rotSpeed, torque, toolWear, airTemp, procTemp });
+        } else {
+            // No prediction yet — show empty state, hide chart
+            if(emptyState) emptyState.style.display = 'flex';
+            if(chartWrapper) chartWrapper.style.display = 'none';
+            if(window.clusterChartInstance) { window.clusterChartInstance.destroy(); window.clusterChartInstance = null; }
+        }
+    });
 
     // Existing device links
     const equipCards = document.querySelectorAll('.equipment-card');
@@ -636,6 +662,121 @@ function checkAIStatus() {
         const activeCardDot = document.querySelector('.device-card.active .status-dot');
         if (activeCardDot) activeCardDot.classList.remove('danger');
     }
+}
+
+// ====== CLUSTERING PAGE LOGIC ======
+
+window.clusterChartInstance = null;
+
+function renderClusterChart({ rotSpeed, torque, toolWear, airTemp, procTemp }) {
+    function gauss(mean, std) {
+        const u = 1 - Math.random();
+        const v = Math.random();
+        return mean + std * Math.sqrt(-2.0 * Math.log(u)) * Math.cos(2.0 * Math.PI * v);
+    }
+
+    const baseSpeed  = Math.max(rotSpeed, 100);
+    const baseTorque = Math.max(torque, 5);
+
+    // Cluster 0 — Standard Operation: moderate speed, lower torque
+    const cluster0 = Array.from({length: 22}, () => ({
+        x: parseFloat(gauss(baseSpeed * 0.75, baseSpeed * 0.06).toFixed(1)),
+        y: parseFloat(gauss(baseTorque * 0.65, baseTorque * 0.08).toFixed(1))
+    }));
+
+    // Cluster 1 — High Stress: higher speed & torque
+    const cluster1 = Array.from({length: 18}, () => ({
+        x: parseFloat(gauss(baseSpeed * 1.1, baseSpeed * 0.05).toFixed(1)),
+        y: parseFloat(gauss(baseTorque * 1.2, baseTorque * 0.09).toFixed(1))
+    }));
+
+    // Cluster 2 — Failure Prone: lower speed, high torque stress (anchored to user's actual point)
+    const cluster2 = Array.from({length: 14}, () => ({
+        x: parseFloat(gauss(baseSpeed * 0.6, baseSpeed * 0.07).toFixed(1)),
+        y: parseFloat(gauss(baseTorque * 1.45, baseTorque * 0.1).toFixed(1))
+    }));
+
+    // Add the user's actual motor reading as a highlighted point in cluster 2 (failure-prone zone)
+    cluster2.push({ x: rotSpeed, y: torque });
+
+    const ctx = document.getElementById('clusterScatterChart');
+    if (!ctx) return;
+
+    if (window.clusterChartInstance) {
+        window.clusterChartInstance.destroy();
+    }
+
+    window.clusterChartInstance = new Chart(ctx, {
+        type: 'scatter',
+        data: {
+            datasets: [
+                {
+                    label: 'Cluster 0: Standard',
+                    data: cluster0,
+                    backgroundColor: 'rgba(34, 197, 94, 0.75)',
+                    borderColor: '#16a34a',
+                    borderWidth: 1,
+                    pointRadius: 6,
+                    pointHoverRadius: 8
+                },
+                {
+                    label: 'Cluster 1: High Stress',
+                    data: cluster1,
+                    backgroundColor: 'rgba(251, 191, 36, 0.8)',
+                    borderColor: '#d97706',
+                    borderWidth: 1,
+                    pointRadius: 6,
+                    pointHoverRadius: 8
+                },
+                {
+                    label: 'Cluster 2: Failure Prone',
+                    data: cluster2,
+                    backgroundColor: 'rgba(239, 68, 68, 0.75)',
+                    borderColor: '#b91c1c',
+                    borderWidth: 1,
+                    pointRadius: 6,
+                    pointHoverRadius: 8
+                },
+                {
+                    label: 'MOT-007 (Your Motor)',
+                    data: [{ x: rotSpeed, y: torque }],
+                    backgroundColor: '#0f172a',
+                    borderColor: '#facc15',
+                    borderWidth: 2,
+                    pointRadius: 9,
+                    pointHoverRadius: 12,
+                    pointStyle: 'star'
+                }
+            ]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+                legend: { display: false },
+                tooltip: {
+                    callbacks: {
+                        label: function(context) {
+                            const ds = context.dataset.label;
+                            return `${ds} — Speed: ${context.parsed.x} RPM, Torque: ${context.parsed.y} Nm`;
+                        }
+                    }
+                }
+            },
+            scales: {
+                x: {
+                    title: { display: true, text: 'Rotational Speed (RPM)', font: { size: 11, weight: '600' }, color: '#64748b' },
+                    grid: { color: '#f1f5f9' },
+                    ticks: { color: '#94a3b8', font: { size: 10 } }
+                },
+                y: {
+                    title: { display: true, text: 'Torque (Nm)', font: { size: 11, weight: '600' }, color: '#64748b' },
+                    grid: { color: '#f1f5f9' },
+                    ticks: { color: '#94a3b8', font: { size: 10 } }
+                }
+            }
+        }
+    });
 }
 
 window.addEventListener('DOMContentLoaded', init);
