@@ -65,9 +65,14 @@ function randomizeMotorGraphsOnInput() {
     const barTorque = document.getElementById('bar-torque');
     const barTool = document.getElementById('bar-tool-wear');
     
+    if (barRot) barRot.style.background = 'var(--accent)';
+    if (barTorque) barTorque.style.background = 'var(--accent)';
+    if (barTool) barTool.style.background = 'var(--accent)';
+    
     if (barRot) barRot.style.height = `${Math.floor(Math.random() * 80) + 10}%`;
     if (barTorque) barTorque.style.height = `${Math.floor(Math.random() * 80) + 10}%`;
     if (barTool) barTool.style.height = `${Math.floor(Math.random() * 80) + 10}%`;
+
 }
 
 // DOM Elements
@@ -216,10 +221,13 @@ function init() {
                 
                 if (driftStatus) {
                     driftStatus.innerText = '✓ Model is Stable';
-                    driftStatus.style.color = '#16a34a';
-                    driftStatus.style.background = '#f0fdf4';
-                    driftStatus.style.borderColor = '#bbf7d0';
+                    driftStatus.style.color = '#854d0e';
+                    driftStatus.style.background = '#fef9c3';
+                    driftStatus.style.borderColor = '#fde68a';
                 }
+
+
+
             } else {
                 // Destroy chart if present
                 if (window.driftChartInstance) {
@@ -411,10 +419,14 @@ function renderOpsChart() {
         data: {
             labels: labels,
             datasets: [
-                { label: 'Training Data', data: trainingData, borderColor: '#3b82f6', backgroundColor: 'rgba(59, 130, 246, 0.25)', borderWidth: 1.5, fill: 'start', tension: 0.4, pointRadius: 0 },
-                { label: 'Live Data', data: liveData, borderColor: '#ef4444', backgroundColor: 'rgba(239, 68, 68, 0.3)', borderWidth: 1.5, fill: 'start', tension: 0.4, pointRadius: 0 }
+                { label: 'Training Data', data: trainingData, borderColor: '#f59e0b', backgroundColor: 'rgba(245, 158, 11, 0.1)', borderWidth: 1.5, fill: 'start', tension: 0.4, pointRadius: 0 },
+                { label: 'Live Data', data: liveData, borderColor: '#ea580c', backgroundColor: 'rgba(234, 88, 12, 0.15)', borderWidth: 1.5, fill: 'start', tension: 0.4, pointRadius: 0 }
+
+
+
             ]
         },
+
         options: {
             responsive: true, maintainAspectRatio: false,
             plugins: { legend: { display: false } },
@@ -450,10 +462,14 @@ function renderKalmanChart() {
         data: {
             labels: labels,
             datasets: [
-                { label: 'Raw Noisy Signal', data: rawData, borderColor: 'rgba(254, 202, 202, 1)', borderWidth: 1.2, tension: 0.1, pointRadius: 0 },
-                { label: 'Moving Average (Lagging)', data: maData, borderColor: 'rgba(251, 146, 60, 1)', borderWidth: 1.5, tension: 0.4, pointRadius: 0 },
-                { label: 'Kalman Filter (More Accurate)', data: kalmanData, borderColor: 'rgba(34, 197, 94, 1)', borderWidth: 2, tension: 0.3, pointRadius: 0 }
+                { label: 'Raw Noisy Signal', data: rawData, borderColor: 'rgba(180, 120, 20, 0.15)', borderWidth: 1.2, tension: 0.1, pointRadius: 0 },
+                { label: 'Moving Average (Lagging)', data: maData, borderColor: '#fbbf24', borderWidth: 1.5, tension: 0.4, pointRadius: 0 },
+                { label: 'Kalman Filter (More Accurate)', data: kalmanData, borderColor: '#f59e0b', borderWidth: 2, tension: 0.3, pointRadius: 0 }
+
+
+
             ]
+
         },
         options: {
             responsive: true, maintainAspectRatio: false,
@@ -493,25 +509,34 @@ function renderDriftChart() {
                 {
                     label: 'Training Data',
                     data: trainingData,
-                    borderColor: '#3b82f6',
-                    backgroundColor: 'rgba(59, 130, 246, 0.25)', // Reverted back to the preferred light color
+                    borderColor: '#f59e0b',
+                    backgroundColor: 'rgba(245, 158, 11, 0.1)', 
                     borderWidth: 1.5,
                     fill: 'start',
-                    tension: 0.4, // True Monotone curve identical to reference
+                    tension: 0.4, 
                     pointRadius: 0,
                     pointHoverRadius: 4
                 },
                 {
                     label: 'Live Data',
                     data: liveData,
-                    borderColor: '#ef4444',
-                    backgroundColor: 'rgba(239, 68, 68, 0.3)', // Reverted back to the preferred light color
+                    borderColor: '#ea580c',
+                    backgroundColor: 'rgba(234, 88, 12, 0.1)', 
                     borderWidth: 1.5,
                     fill: 'start',
                     tension: 0.4,
                     pointRadius: 0,
+
+                    backgroundColor: 'rgba(244, 169, 168, 0.1)', 
+                    borderWidth: 1.5,
+                    fill: 'start',
+                    tension: 0.4,
+                    pointRadius: 0,
+
+
                     pointHoverRadius: 4
                 }
+
             ]
         },
         options: {
@@ -730,8 +755,8 @@ function renderClusterChart({ rotSpeed, torque, toolWear, airTemp, procTemp }) {
                 {
                     label: 'Cluster 0: Standard',
                     data: cluster0,
-                    backgroundColor: 'rgba(34, 197, 94, 0.75)',
-                    borderColor: '#16a34a',
+                    backgroundColor: 'rgba(163, 177, 138, 0.75)',
+                    borderColor: '#a3b18a',
                     borderWidth: 1,
                     pointRadius: 6,
                     pointHoverRadius: 8
@@ -739,17 +764,18 @@ function renderClusterChart({ rotSpeed, torque, toolWear, airTemp, procTemp }) {
                 {
                     label: 'Cluster 1: High Stress',
                     data: cluster1,
-                    backgroundColor: 'rgba(251, 191, 36, 0.8)',
-                    borderColor: '#d97706',
+                    backgroundColor: 'rgba(233, 196, 106, 0.8)',
+                    borderColor: '#e9c46a',
                     borderWidth: 1,
                     pointRadius: 6,
                     pointHoverRadius: 8
                 },
+
                 {
                     label: 'Cluster 2: Failure Prone',
                     data: cluster2,
-                    backgroundColor: 'rgba(239, 68, 68, 0.75)',
-                    borderColor: '#b91c1c',
+                    backgroundColor: 'rgba(244, 169, 168, 0.75)',
+                    borderColor: '#f4a9a8',
                     borderWidth: 1,
                     pointRadius: 6,
                     pointHoverRadius: 8
@@ -757,13 +783,14 @@ function renderClusterChart({ rotSpeed, torque, toolWear, airTemp, procTemp }) {
                 {
                     label: 'MOT-007 (Your Motor)',
                     data: [{ x: rotSpeed, y: torque }],
-                    backgroundColor: '#0f172a',
-                    borderColor: '#facc15',
+                    backgroundColor: '#3f3f46',
+                    borderColor: '#e9c46a',
                     borderWidth: 2,
                     pointRadius: 9,
                     pointHoverRadius: 12,
                     pointStyle: 'star'
                 }
+
             ]
         },
         options: {
@@ -797,3 +824,255 @@ function renderClusterChart({ rotSpeed, torque, toolWear, airTemp, procTemp }) {
 }
 
 window.addEventListener('DOMContentLoaded', init);
+
+/* =====================================================
+   AUTOMATIC SENSOR MODE — Chart.js Waveform Engine
+   ===================================================== */
+
+const SENSOR_CONFIG = [
+    { id: 'sc-air-temp',  valId: 'sv-air-temp',  label: 'Air Temp',      base: 300,  noise: 4,   min: 290,  max: 315,  color: '#f59e0b', unit: 'K'   },
+    { id: 'sc-proc-temp', valId: 'sv-proc-temp', label: 'Process Temp',  base: 310,  noise: 5,   min: 298,  max: 328,  color: '#ea580c', unit: 'K'   },
+    { id: 'sc-rot-speed', valId: 'sv-rot-speed', label: 'Rot. Speed',    base: 1500, noise: 80,  min: 1200, max: 1800, color: '#d97706', unit: 'RPM' },
+    { id: 'sc-torque',    valId: 'sv-torque',    label: 'Torque',        base: 45,   noise: 8,   min: 25,   max: 72,   color: '#b45309', unit: 'Nm'  },
+    { id: 'sc-tool-wear', valId: 'sv-tool-wear', label: 'Tool Wear',     base: 120,  noise: 3,   min: 100,  max: 250,  color: '#92400e', unit: 'min' },
+];
+
+const MAX_POINTS = 60;
+let autoModeInterval = null;
+let autoModeActive = false;
+
+// Build initial warm-up history for each sensor
+const sensorState = SENSOR_CONFIG.map(cfg => {
+    const history = [];
+    let val = cfg.base;
+    for (let i = 0; i < MAX_POINTS; i++) {
+        val = val * 0.95 + cfg.base * 0.05 + (Math.random() - 0.5) * cfg.noise * 1.5;
+        val = Math.max(cfg.min, Math.min(cfg.max, val));
+        history.push(parseFloat(val.toFixed(2)));
+    }
+    return { ...cfg, current: val, history, chart: null };
+});
+
+// ── Create Chart.js instance for a sensor ─────────────────────────────────────
+function createSensorChart(sensor) {
+    const canvas = document.getElementById(sensor.id);
+    if (!canvas) return null;
+
+    // Build gradient using the canvas context
+    const ctx2d = canvas.getContext('2d');
+    const gradient = ctx2d.createLinearGradient(0, 0, 0, 120);
+    gradient.addColorStop(0, sensor.color + '55');
+    gradient.addColorStop(0.6, sensor.color + '18');
+    gradient.addColorStop(1, sensor.color + '00');
+
+    const labels = sensor.history.map((_, i) => i);
+
+    return new Chart(canvas, {
+        type: 'line',
+        data: {
+            labels: labels,
+            datasets: [{
+                data: [...sensor.history],
+                borderColor: sensor.color,
+                backgroundColor: gradient,
+                borderWidth: 2.2,
+                fill: true,
+                tension: 0.42,
+                pointRadius: 0,
+                pointHoverRadius: 5,
+                pointHoverBackgroundColor: sensor.color,
+                pointHoverBorderColor: '#fff',
+                pointHoverBorderWidth: 2,
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            animation: false,
+            interaction: { mode: 'index', intersect: false },
+            plugins: {
+                legend: { display: false },
+                tooltip: {
+                    enabled: true,
+                    backgroundColor: '#451a03',
+                    titleColor: '#fde68a',
+                    bodyColor: '#fff',
+                    padding: 10,
+                    cornerRadius: 8,
+                    callbacks: {
+                        title: () => sensor.label,
+                        label: ctx => `${ctx.parsed.y.toFixed(2)} ${sensor.unit}`
+                    }
+                }
+            },
+            scales: {
+                x: {
+                    display: false,
+                    grid: { display: false }
+                },
+                y: {
+                    display: true,
+                    position: 'right',
+                    grid: { color: 'rgba(180,120,20,0.07)', drawBorder: false },
+                    ticks: {
+                        color: '#b45309',
+                        font: { size: 9, weight: '600' },
+                        maxTicksLimit: 4,
+                        callback: v => v.toFixed(0)
+                    },
+                    border: { display: false }
+                }
+            }
+        }
+    });
+}
+
+// ── Tick: advance sensor values, update Chart.js data ─────────────────────────
+function tickSensors() {
+    sensorState.forEach(sensor => {
+        // Realistic drift + noise with mean-reversion toward base
+        let next = sensor.current * 0.94 + sensor.base * 0.06
+                 + (Math.random() - 0.5) * sensor.noise * 1.4;
+        next = Math.max(sensor.min, Math.min(sensor.max, next));
+        sensor.current = next;
+
+        // Update live value badge
+        const valEl = document.getElementById(sensor.valId);
+        if (valEl) valEl.textContent = next.toFixed(0);
+
+        // Push to Chart.js data (shift oldest off)
+        if (sensor.chart) {
+            sensor.chart.data.labels.push(sensor.chart.data.labels.length);
+            sensor.chart.data.labels.shift();
+            sensor.chart.data.datasets[0].data.push(parseFloat(next.toFixed(2)));
+            sensor.chart.data.datasets[0].data.shift();
+            sensor.chart.update('none'); // no animation for smooth scrolling feel
+        }
+    });
+
+    runAutoPrediction();
+}
+
+// ── Continuous prediction → drives existing right-column prediction panel ─────
+function runAutoPrediction() {
+    const airTemp  = sensorState[0].current;
+    const procTemp = sensorState[1].current;
+    const rotSpeed = sensorState[2].current;
+    const torque   = sensorState[3].current;
+    const toolWear = sensorState[4].current;
+
+    const tempDiff = procTemp - airTemp;
+    let score = 100;
+    if (torque > 60)       score -= 26;
+    else if (torque > 50)  score -= 14;
+    else if (torque > 45)  score -= 8;
+    if (rotSpeed < 1350)   score -= 18;
+    else if (rotSpeed > 1700) score -= 10;
+    if (toolWear > 200)    score -= 22;
+    else if (toolWear > 160) score -= 12;
+    if (tempDiff > 14)     score -= 16;
+    else if (tempDiff > 10) score -= 8;
+    // tiny live wobble so the number feels alive
+    score += (Math.random() - 0.5) * 5;
+    score = Math.max(5, Math.min(100, score));
+
+    const healthy = score >= 65;
+    const statusLabel = healthy ? 'Healthy' : 'At Risk';
+
+    // Cost model matching the reference image values
+    const costFailure = healthy
+        ? Math.round(score * 1400 + 60000)
+        : Math.round((100 - score) * 5800 + 80000);
+    const savings = Math.round(costFailure * (healthy ? 0.72 : 0.60));
+
+    // ── Update right-column panel (same IDs as manual mode) ──────────────────
+    const motorResultsDiv = document.getElementById('motor-results-left');
+    if (motorResultsDiv) {
+        motorResultsDiv.style.display = '';
+        motorResultsDiv.style.opacity = '1';
+    }
+
+    const statusEl = document.getElementById('motor-status-text');
+    if (statusEl) {
+        statusEl.textContent = statusLabel;
+        statusEl.style.color = healthy ? '#d97706' : '#dc2626';
+    }
+
+    const healthEl = document.getElementById('motor-health-score');
+    if (healthEl) healthEl.textContent = score.toFixed(2) + ' / 100';
+
+    const costEl = document.getElementById('motor-cost-failure');
+    if (costEl) costEl.textContent = '₹' + costFailure.toLocaleString('en-IN');
+
+    const savingsEl = document.getElementById('motor-predicted-savings');
+    if (savingsEl) savingsEl.textContent = '₹' + savings.toLocaleString('en-IN');
+
+    // Also show recommendations section
+    const recDiv = document.getElementById('motor-action-recommendations');
+    if (recDiv) recDiv.style.display = '';
+}
+
+// ── Mode toggle wiring ─────────────────────────────────────────────────────────
+function initModeToggle() {
+    const btnManual = document.getElementById('btn-mode-manual');
+    const btnAuto   = document.getElementById('btn-mode-auto');
+    const manualDiv = document.getElementById('motor-manual-inputs');
+    const autoDiv   = document.getElementById('motor-auto-inputs');
+    const resultsDiv = document.getElementById('motor-results-left');
+
+    if (!btnManual || !btnAuto) return;
+
+    btnManual.addEventListener('click', () => {
+        if (!autoModeActive) return;
+        autoModeActive = false;
+        clearInterval(autoModeInterval);
+        autoModeInterval = null;
+
+        // Destroy Chart.js instances so canvases are clean on re-enter
+        sensorState.forEach(s => {
+            if (s.chart) { s.chart.destroy(); s.chart = null; }
+        });
+
+        btnManual.classList.add('active');
+        btnAuto.classList.remove('active');
+        manualDiv.style.display = '';
+        autoDiv.style.display = 'none';
+
+        // Restore right panel and grid for manual mode
+        const motorGrid = document.querySelector('.motor-grid');
+        if (motorGrid) motorGrid.style.gridTemplateColumns = '1fr 1fr';
+        const rightCol = document.getElementById('motor-results-right');
+        if (rightCol) rightCol.style.display = '';
+
+        // Hide left results panel until manual predict is clicked
+        if (resultsDiv) { resultsDiv.style.display = 'none'; resultsDiv.style.opacity = '0'; }
+    });
+
+    btnAuto.addEventListener('click', () => {
+        if (autoModeActive) return;
+        autoModeActive = true;
+
+        btnAuto.classList.add('active');
+        btnManual.classList.remove('active');
+        manualDiv.style.display = 'none';
+        autoDiv.style.display = '';
+
+        // Hide right panel and set full width for sensor graphs in auto mode
+        const motorGrid = document.querySelector('.motor-grid');
+        if (motorGrid) motorGrid.style.gridTemplateColumns = '1fr';
+        const rightCol = document.getElementById('motor-results-right');
+        if (rightCol) rightCol.style.display = 'none';
+
+        // Create Chart.js instances on the next frame (canvases now visible)
+        requestAnimationFrame(() => {
+            sensorState.forEach(s => { s.chart = createSensorChart(s); });
+            tickSensors();                                   // immediate first tick
+            autoModeInterval = setInterval(tickSensors, 800); // ~1.25 fps feels natural
+        });
+    });
+}
+
+document.addEventListener('DOMContentLoaded', initModeToggle);
+
+
+

@@ -1076,3 +1076,28 @@ document.addEventListener('DOMContentLoaded', initModeToggle);
 
 
 
+
+
+// Next.js mounting fix
+if (typeof init === 'function') {
+    if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', init);
+    } else {
+        init();
+    }
+}
+
+
+// FORCE_DASHBOARD_INIT
+(function() {
+    function triggerInit() {
+        console.log('Dashboard: Force Initialization Triggered');
+        if (typeof init === 'function') init();
+        if (typeof initModeToggle === 'function') initModeToggle();
+    }
+    if (document.readyState === 'complete' || document.readyState === 'interactive') {
+        setTimeout(triggerInit, 800);
+    } else {
+        window.addEventListener('load', triggerInit);
+    }
+})();
