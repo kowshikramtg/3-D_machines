@@ -1,6 +1,7 @@
 import "./globals.css";
 import Script from "next/script";
 import { ReactNode } from "react";
+import Footer from "./components/Footer";
 
 export const metadata = {
   title: "Equipment Monitor | Industrial SaaS",
@@ -36,7 +37,10 @@ export default function RootLayout({
         <Script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js" strategy="beforeInteractive"></Script>
       </head>
       <body>
-        {children}
+        <main style={{ flex: 1 }}>
+          {children}
+        </main>
+        <Footer />
       </body>
     </html>
   );

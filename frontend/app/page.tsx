@@ -19,13 +19,20 @@ export default function LandingPage() {
       }
     };
     window.addEventListener("mousemove", handleMouseMove);
-    return () => window.removeEventListener("mousemove", handleMouseMove);
+
+    // Toggle body class for conditional padding (no footer gap on landing)
+    document.body.classList.add("landing-page");
+
+    return () => {
+      window.removeEventListener("mousemove", handleMouseMove);
+      document.body.classList.remove("landing-page");
+    };
   }, []);
 
   return (
     <>
       <Script src="https://unpkg.com/@phosphor-icons/web" strategy="beforeInteractive" />
-      
+
       {/* Dynamic Cursor Glow */}
       <div ref={glowRef} className={styles.mouseGlow} />
 
@@ -36,31 +43,30 @@ export default function LandingPage() {
         {/* Continuous Active Data Streams */}
         <div className={styles.dataLayer}>
           {[...Array(20)].map((_, i) => (
-            <div 
-              key={i} 
-              className={styles.dataLine} 
+            <div
+              key={i}
+              className={styles.dataLine}
               style={{
                 left: `${Math.random() * 100}%`,
                 animationDelay: `${Math.random() * 5}s`,
                 animationDuration: `${2 + Math.random() * 4}s`
-              }} 
+              }}
             />
           ))}
         </div>
 
         <div className={styles.contentWrapper}>
-          
+
           {/* Two-Column Hero with 3D Element */}
           <div className={styles.heroSection}>
             <div className={styles.heroTextContent}>
 
               <h1 className={styles.heroTitle}>
-                Industrial AI, <br /> <span>Elegantly Scaled.</span>
+                Powering <br /> <span>Your Digital Factory</span>
               </h1>
 
               <p className={styles.heroSubtitle}>
-                Transform your fleet monitoring with zero-latency digital twins, 
-                supercharged analytics, and high-precision predictive maintenance algorithms.
+                A scalable, AI-Driven Universal Predictive Maintainance Platform to Monitor Diverse Industrial Machines, Predict Failures, Provide Actionable Insights, and Estimate Business Impact.
               </p>
 
               <div className={styles.ctaWrapper}>
@@ -80,17 +86,27 @@ export default function LandingPage() {
         {/* Seamless Infinite Marquee with fixed colors */}
         <div className={styles.marqueeContainer}>
           <div className={styles.marqueeContent}>
-            <span><i className="ph-bold ph-sparkle"></i> KALMAN FILTERING</span>
-            <span><i className="ph-bold ph-rocket-launch"></i> CINEMATIC SPACE WARP</span>
-            <span><i className="ph-bold ph-chart-scatter"></i> PREDICTIVE MAINTENANCE</span>
-            <span><i className="ph-bold ph-cube"></i> ZERO-LATENCY TWINS</span>
-            <span><i className="ph-bold ph-lightning"></i> XAI PATTERN MINING</span>
+            <span><i className="ph-bold "></i> KALMAN FILTERING</span>
+            <span><i className="ph-bold "></i> | </span>
+            <span><i className="ph-bold "></i> SHAP EXPLAINABILITY</span>
+            <span><i className="ph-bold "></i> | </span>
+            <span><i className="ph-bold "></i> PREDICTIVE MAINTENANCE</span>
+            <span><i className="ph-bold "></i> | </span>
+            <span><i className="ph-bold "></i> ZERO-LATENCY TWINS</span>
+            <span><i className="ph-bold "></i> | </span>
+            <span><i className="ph-bold "></i> XAI PATTERN MINING</span>
             {/* Duplication for seamless scroll */}
-            <span><i className="ph-bold ph-sparkle"></i> KALMAN FILTERING</span>
-            <span><i className="ph-bold ph-rocket-launch"></i> CINEMATIC SPACE WARP</span>
-            <span><i className="ph-bold ph-chart-scatter"></i> PREDICTIVE MAINTENANCE</span>
-            <span><i className="ph-bold ph-cube"></i> ZERO-LATENCY TWINS</span>
-            <span><i className="ph-bold ph-lightning"></i> XAI PATTERN MINING</span>
+            <span><i className="ph-bold "></i> | </span>
+            <span><i className="ph-bold "></i> KALMAN FILTERING</span>
+            <span><i className="ph-bold "></i> | </span>
+            <span><i className="ph-bold "></i> SHAP EXPLAINABILITY</span>
+            <span><i className="ph-bold "></i> | </span>
+            <span><i className="ph-bold "></i> PREDICTIVE MAINTENANCE</span>
+            <span><i className="ph-bold "></i> | </span>
+            <span><i className="ph-bold "></i> ZERO-LATENCY TWINS</span>
+            <span><i className="ph-bold "></i> | </span>
+            <span><i className="ph-bold "></i> XAI PATTERN MINING</span>
+            <span><i className="ph-bold "></i> | </span>
           </div>
         </div>
 
@@ -98,32 +114,33 @@ export default function LandingPage() {
         <div className={styles.contentWrapper} style={{ paddingTop: 0 }}>
           <div className={styles.featureGrid}>
             <div className={styles.featureCard}>
-              <div className={styles.featureIcon}>
+              {/* <div className={styles.featureIcon}>
                 <i className="ph-bold ph-cube"></i>
-              </div>
-              <h3 className={styles.featureTitle}>Digital Twins</h3>
+              </div> */}
+              <h3 className={styles.featureTitle}>PREDICT</h3>
               <p className={styles.featureDesc}>
-                Interact with high-fidelity, optimized GLB models of your industrial machines directly in the browser seamlessly.
+                Detects anamoly in real time and predicts failures before they happen.
+                No more failures at <span style={{ color: "#451a03", fontWeight: "semibold" }}>Peak time</span>, no more downtime, no more losses.
               </p>
             </div>
 
             <div className={styles.featureCard}>
-              <div className={styles.featureIcon}>
+              {/* <div className={styles.featureIcon}>
                 <i className="ph-bold ph-chart-line-up"></i>
-              </div>
-              <h3 className={styles.featureTitle}>Predictive Health</h3>
+              </div> */}
+              <h3 className={styles.featureTitle}>PREVENT</h3>
               <p className={styles.featureDesc}>
-                Real-time anomaly scoring, model drift detection, and advanced Kalman filter smoothing at your fingertips.
+                Prevents from failures by providing real-time anomaly scoring, model drift detection, and advanced <span style={{ color: "#451a03", fontWeight: "semibold" }}>Kalman Filter</span> smoothing at your fingertips. Preventing to put loots of money in reapairs after distruction.
               </p>
             </div>
 
             <div className={styles.featureCard}>
-              <div className={styles.featureIcon}>
+              {/* <div className={styles.featureIcon}>
                 <i className="ph-bold ph-lightning"></i>
-              </div>
-              <h3 className={styles.featureTitle}>XAI Constraints</h3>
+              </div> */}
+              <h3 className={styles.featureTitle}>PERFORM</h3>
               <p className={styles.featureDesc}>
-                Leverage our Maintenance Pattern Miner to immediately discover hidden correlations preventing catastrophic failure.
+                Smooth Performance Monitoring and Optimization at your fingertips, with the help of Model Drift Detection.
               </p>
             </div>
           </div>
