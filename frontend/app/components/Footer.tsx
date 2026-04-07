@@ -8,8 +8,8 @@ const Footer: React.FC = () => {
                 {/* Left Side: Brand & Address */}
                 <div className={styles.brandSection}>
                     <div className={styles.logo}>
-                        <span className={styles.logoSmart}>Smart</span>
-                        <span className={styles.logoPredict}>Predict</span>
+                        <span className={styles.logoSmart}>SH</span>
+                        <span className={styles.logoPredict}>astra</span>
                     </div>
                     <address className={styles.address}>
                         JSS Boys Hostel, Vishnuvardhana Road,<br />
@@ -26,8 +26,8 @@ const Footer: React.FC = () => {
                             <a href="#" className={styles.instagram} aria-label="Instagram"><i className="ph-fill ph-instagram-logo"></i></a>
                         </div>
                     </div>
-                    <div className={styles.copyright}>
-                        &copy; 2025 SmartPredict. All rights reserved.
+                    <div className={styles.copyright}>q
+                        &copy; 2026 Shastra. All rights reserved.
                     </div>
                 </div>
 
@@ -58,7 +58,7 @@ const Footer: React.FC = () => {
 
             {/* Bottom Tagline */}
             <div className={styles.bottomBar}>
-                <span>@SmartPredict | 2025 | </span>
+                <span>@Shastra | 2026 | </span>
                 <span className={styles.highlight}>DriveX</span>
             </div>
         </footer>

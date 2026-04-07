@@ -67,12 +67,13 @@ const devices = [
 
 let activeDeviceId = 5; // Start with Electric Motor for the UX demo
 let motorPredicted = false;
+let currentUser = null;
 
 // ====== INITIALIZATION ======
 
 function init() {
     renderDeviceList();
-    
+
     // Set initial device
     const initialDev = devices.find(d => d.id === activeDeviceId);
     if (initialDev) selectDevice(activeDeviceId);
@@ -85,17 +86,158 @@ function init() {
 
 function initAuthToggle() {
     const btnAuthToggle = document.getElementById('btn-auth-toggle');
-    const authLocked = document.getElementById('auth-locked-container');
-    const authUnlocked = document.getElementById('auth-unlocked-container');
-    let isLoggedIn = false;
+    const btnAccount = document.getElementById('btn-account');
+    
+    // Check initial state
+    checkAuthState();
+
     if (btnAuthToggle) {
         btnAuthToggle.addEventListener('click', () => {
-            isLoggedIn = !isLoggedIn;
-            btnAuthToggle.innerText = isLoggedIn ? 'Logout' : 'Login';
-            if (authLocked) authLocked.style.display = isLoggedIn ? 'none' : 'flex';
-            if (authUnlocked) authUnlocked.style.display = isLoggedIn ? 'flex' : 'none';
+            if (currentUser) {
+                logoutUser();
+            } else {
+                showLogin();
+            }
         });
     }
+
+    if (btnAccount) {
+        btnAccount.addEventListener('click', () => {
+            if (currentUser) {
+                showAccount();
+            } else {
+                showLogin();
+            }
+        });
+    }
+
+    // Auth Form Logic
+    const btnDoAuth = document.getElementById('btn-do-auth');
+    const btnSwitchAuth = document.getElementById('btn-switch-auth');
+    if (btnDoAuth) btnDoAuth.addEventListener('click', handleAuthSubmit);
+    if (btnSwitchAuth) btnSwitchAuth.addEventListener('click', toggleAuthMode);
+    
+    const btnLogout = document.getElementById('btn-logout');
+    if (btnLogout) btnLogout.addEventListener('click', logoutUser);
+}
+
+function checkAuthState() {
+    const savedUser = localStorage.getItem('shastra_user');
+    if (savedUser) {
+        currentUser = JSON.parse(savedUser);
+        updateAuthUI(true);
+    } else {
+        updateAuthUI(false);
+    }
+}
+
+function updateAuthUI(isLoggedIn) {
+    const btnAuthToggle = document.getElementById('btn-auth-toggle');
+    const authLocked = document.getElementById('auth-locked-container');
+    const authUnlocked = document.getElementById('auth-unlocked-container');
+    
+    if (btnAuthToggle) {
+        btnAuthToggle.innerText = isLoggedIn ? 'Logout' : 'Login';
+        btnAuthToggle.classList.toggle('pill-login', isLoggedIn);
+    }
+    
+    if (authLocked) authLocked.style.display = isLoggedIn ? 'none' : 'flex';
+    if (authUnlocked) authUnlocked.style.display = isLoggedIn ? 'flex' : 'none';
+
+    if (isLoggedIn && currentUser) {
+        // Update Account View Details
+        const initials = currentUser.name.split(' ').map(n => n[0]).join('').toUpperCase();
+        document.getElementById('acc-initials').innerText = initials;
+        document.getElementById('acc-name').innerText = currentUser.name;
+        document.getElementById('acc-email').innerText = currentUser.email;
+        document.getElementById('acc-uid').innerText = currentUser.id || 'USR-TEMP-001';
+        document.getElementById('acc-type').innerText = currentUser.accountType || 'Standard';
+        document.getElementById('acc-machines').innerText = currentUser.machinesManaged || 0;
+        document.getElementById('acc-tickets').innerText = currentUser.ticketsRaised || 0;
+    }
+}
+
+async function handleAuthSubmit() {
+    const isSignup = document.getElementById('signup-name-field').style.display === 'block';
+    const email = document.getElementById('auth-email').value;
+    const password = document.getElementById('auth-password').value;
+    const name = document.getElementById('auth-name').value;
+    const errorEl = document.getElementById('auth-error');
+    const btn = document.getElementById('btn-do-auth');
+
+    if (!email || !password || (isSignup && !name)) {
+        showAuthError('Please fill in all fields.');
+        return;
+    }
+
+    btn.innerText = isSignup ? 'Creating Account...' : 'Signing in...';
+    btn.disabled = true;
+    errorEl.style.display = 'none';
+
+    try {
+        const route = isSignup ? '/api/auth/signup' : '/api/auth/login';
+        const body = isSignup ? { name, email, password } : { email, password };
+        
+        const response = await fetch(route, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(body)
+        });
+
+        const data = await response.json();
+
+        if (data.success) {
+            currentUser = data.user;
+            localStorage.setItem('shastra_user', JSON.stringify(currentUser));
+            updateAuthUI(true);
+            hideSubViews(); // Go back to dashboard on success
+        } else {
+            showAuthError(data.error || 'Authentication failed.');
+        }
+    } catch (error) {
+        showAuthError('Server error. Please try again later.');
+    } finally {
+        btn.innerText = isSignup ? 'Sign up' : 'Sign in';
+        btn.disabled = false;
+    }
+}
+
+function showAuthError(msg) {
+    const errorEl = document.getElementById('auth-error');
+    if (errorEl) {
+        errorEl.innerText = msg;
+        errorEl.style.display = 'block';
+    }
+}
+
+function toggleAuthMode(e) {
+    e.preventDefault();
+    const isLogin = document.getElementById('auth-title').innerText === 'Sign in';
+    document.getElementById('auth-title').innerText = isLogin ? 'Create Account' : 'Sign in';
+    document.getElementById('auth-subtitle').innerText = isLogin ? 'Join the Shastra industrial ecosystem.' : 'Enter details to log in to your industrial control panel.';
+    document.getElementById('signup-name-field').style.display = isLogin ? 'block' : 'none';
+    document.getElementById('btn-do-auth').innerText = isLogin ? 'Sign up' : 'Sign in';
+    document.getElementById('btn-switch-auth').innerText = isLogin ? 'Already have an account? Sign in' : "Don't have an account? Sign up";
+    document.getElementById('auth-error').style.display = 'none';
+}
+
+function logoutUser() {
+    currentUser = null;
+    localStorage.removeItem('shastra_user');
+    updateAuthUI(false);
+    hideSubViews();
+}
+
+function showLogin() {
+    hideSubViews();
+    document.getElementById('motor-dashboard').style.display = 'none';
+    document.getElementById('view-login').style.display = 'block';
+}
+
+function showAccount() {
+    hideSubViews();
+    document.getElementById('motor-dashboard').style.display = 'none';
+    document.getElementById('view-account').style.display = 'block';
 }
 
 function initSubNav() {
@@ -103,21 +245,47 @@ function initSubNav() {
     document.querySelectorAll('.back-link').forEach(link => {
         link.addEventListener('click', (e) => {
             e.preventDefault();
-            // In the unified UX, the "Home" is just the current machine dashboard
-            // But we can hide sub-views if we are in one.
             hideSubViews();
         });
+    });
+
+    // Specific Feature Links
+    const featureLinks = {
+        'link-features-ops': 'view-model-ops',
+        'link-features-command': 'view-command-center',
+        'link-features-kalman': 'view-kalman-filter',
+        'link-features-patterns': 'view-pattern-miner',
+        'link-clustering-motor': 'view-clustering-motors'
+    };
+
+    Object.entries(featureLinks).forEach(([id, viewId]) => {
+        const el = document.getElementById(id);
+        if (el) {
+            el.addEventListener('click', (e) => {
+                e.preventDefault();
+                hideSubViews();
+                document.getElementById('motor-dashboard').style.display = 'none';
+                document.getElementById(viewId).style.display = 'block';
+                
+                // Initialize specific view charts if needed
+                if (viewId === 'view-model-ops') initOpsDriftChart();
+                if (viewId === 'view-kalman-filter') initKalmanChart();
+            });
+        }
     });
 }
 
 function hideSubViews() {
-     const subViews = ['view-model-ops', 'view-command-center', 'view-kalman-filter', 'view-pattern-miner', 'view-clustering-motors'];
-     subViews.forEach(id => {
-         const el = document.getElementById(id);
-         if (el) el.style.display = 'none';
-     });
-     const dash = document.getElementById('motor-dashboard');
-     if (dash) dash.style.display = 'block';
+    const subViews = [
+        'view-model-ops', 'view-command-center', 'view-kalman-filter', 
+        'view-pattern-miner', 'view-clustering-motors', 'view-login', 'view-account'
+    ];
+    subViews.forEach(id => {
+        const el = document.getElementById(id);
+        if (el) el.style.display = 'none';
+    });
+    const dash = document.getElementById('motor-dashboard');
+    if (dash) dash.style.display = 'block';
 }
 
 // ====== DEVICE SELECTION & UX ======
@@ -149,7 +317,7 @@ function selectDevice(id) {
     if (dashTitle) dashTitle.innerText = dev.name;
 
     const motorDashboard = document.getElementById('motor-dashboard');
-    
+
     // Trigger Space Warp Transition
     if (window.triggerSpaceWarp) {
         if (motorDashboard) motorDashboard.style.opacity = '0';
@@ -157,8 +325,7 @@ function selectDevice(id) {
             if (motorDashboard) {
                 motorDashboard.style.display = 'block';
                 motorDashboard.style.opacity = '1';
-                motorDashboard.classList.add('speed-zoom-in');
-                setTimeout(() => motorDashboard.classList.remove('speed-zoom-in'), 800);
+                motorDashboard.classList.remove('animate-in');
             }
             initDeviceState(dev);
             renderDeviceUI(dev);
@@ -237,7 +404,7 @@ function renderDeviceUI(dev) {
             `;
         });
         barsHTML += `<div style="position: absolute; bottom: 25px; left: 0; width: 100%; border-top: 1px solid var(--border-color);"></div></div></div>`;
-        
+
         // LSTM Score Placeholder
         barsHTML += `
             <div class="card-section" style="padding: 1.5rem; text-align: center;">
@@ -300,11 +467,11 @@ function updatePredictionDisplay(status, score, healthy) {
 
     if (statusEl) { statusEl.innerText = status; statusEl.style.color = healthy ? '#d97706' : '#dc2626'; }
     if (scoreEl) scoreEl.innerText = score.toFixed(2) + ' / 100';
-    
+
     // Mock Business Impact
     const cost = healthy ? Math.round(score * 1200 + 50000) : Math.round((100 - score) * 5000 + 70000);
     const savings = Math.round(cost * 0.65);
-    
+
     if (costEl) costEl.innerText = '₹' + cost.toLocaleString('en-IN');
     if (savingsEl) savingsEl.innerText = '₹' + savings.toLocaleString('en-IN');
     if (recsEl) recsEl.style.display = healthy ? 'none' : 'block';
@@ -332,10 +499,10 @@ function initDeviceState(dev) {
             val = Math.max(s.min, Math.min(s.max, val));
             history.push(parseFloat(val.toFixed(2)));
         }
-        return { 
-            id: `sc-${s.id}`, valId: `sv-${s.id}`, label: s.label, unit: s.unit, 
-            base: s.base, noise: s.noise, min: s.min, max: s.max, 
-            color: '#f59e0b', current: val, history, chart: null 
+        return {
+            id: `sc-${s.id}`, valId: `sv-${s.id}`, label: s.label, unit: s.unit,
+            base: s.base, noise: s.noise, min: s.min, max: s.max,
+            color: '#f59e0b', current: val, history, chart: null
         };
     });
 }
@@ -399,9 +566,9 @@ function runAutoPrediction() {
 
 function initModeToggle() {
     const btnManual = document.getElementById('btn-mode-manual');
-    const btnAuto   = document.getElementById('btn-mode-auto');
+    const btnAuto = document.getElementById('btn-mode-auto');
     const manualDiv = document.getElementById('motor-manual-inputs');
-    const autoDiv   = document.getElementById('motor-auto-inputs');
+    const autoDiv = document.getElementById('motor-auto-inputs');
     const resultsDiv = document.getElementById('motor-results-left');
 
     if (!btnManual || !btnAuto) return;
@@ -428,7 +595,7 @@ function initModeToggle() {
         if (resultsDiv) { resultsDiv.style.display = 'block'; resultsDiv.style.opacity = '1'; }
         requestAnimationFrame(() => {
             sensorState.forEach(s => { s.chart = createSensorChart(s); });
-            autoModeInterval = setInterval(tickSensors, 800); 
+            autoModeInterval = setInterval(tickSensors, 800);
         });
     });
 }
